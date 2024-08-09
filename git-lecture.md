@@ -1,1 +1,1 @@
-RaiseTechの第2回課題用です。
+# RaiseTech第2回課題です。
