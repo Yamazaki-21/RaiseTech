@@ -1,0 +1,293 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Raisetech lecture10 (CloudFormation Template)
+
+Parameters:
+  DBUsername:
+    Type: String
+    Description: "The master username for the RDS instance"
+    Default: "admin"  # 必要に応じてデフォルト値を設定可能
+    MinLength: 1  # 最小長さを設定
+    MaxLength: 16 # 最大長さを設定
+    AllowedPattern: "^[a-zA-Z0-9]*$"  # 使用可能な文字を制限（例: 英数字のみ）
+    ConstraintDescription: "Username must be between 1 and 16 characters and contain only alphanumeric characters."
+
+  DBPassword:
+    Type: String
+    Description: "The master password for the RDS instance"
+    NoEcho: true  # パスワードが表示されないようにする
+    MinLength: 8  # 最小長さを設定（例: 8文字以上）
+    MaxLength: 41  # 最大長さを設定（例: 41文字以内）
+    AllowedPattern: "^[a-zA-Z0-9]*$"  # 使用可能な文字を制限（例: 英数字のみ）
+    ConstraintDescription: "Password must be between 8 and 41 characters and contain only alphanumeric characters."
+
+Resources:
+
+  # VPCの作成
+  VPC:  # 変数名のようなもの
+    Type: AWS::EC2::VPC  # リソース名(EC2は作成されないけどEC2と書かれるみたい)
+    Properties:
+      CidrBlock: '10.1.0.0/21'
+      EnableDnsSupport: true     # VPC内でDNS解決を有効にします。これにより、VPC内のリソースにドメイン名でアクセスできるようになります。
+      EnableDnsHostnames: true   # VPC内のEC2インスタンスや他のリソースにDNSホスト名を付与します。これにより、インスタンスを名前でアクセスできるようになります。
+      Tags:
+        - Key: Name # 名前タグ
+          Value: raisetech-vpc
+
+    # インターネットゲートウェイの作成
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway # リソース名(EC2は作成されないけどEC2と書かれるみたい)
+    Properties:
+      Tags:
+        - Key: Name
+          Value: 'MyInternetGateway'
+
+  # インターネットゲートウェイをVPCにアタッチ
+  InternetGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref VPC # VPCのIDを指定
+      InternetGatewayId: !Ref InternetGateway # 作成したインターネットゲートウェイを指定
+
+  # パブリックサブネット1の作成
+  PublicSubnet1:  # 変数名のようなもの
+    Type: AWS::EC2::Subnet  # リソース名(EC2は作成されないけどEC2と書かれるみたい)
+    Properties:
+      VpcId: !Ref VPC  # 作成するVPCを指定
+      CidrBlock: '10.1.0.0/24'  # パブリックサブネット1のCIDRブロック
+      AvailabilityZone: !Select [ 0, !GetAZs '' ]  # アベイラビリティゾーンの選択、!GetAZs ''は利用可能なアベイラビリティゾーンをリストで取得し、!Select [0, ...]は最初のゾーンを選択します。
+      MapPublicIpOnLaunch: true  # パブリックIPを自動割り当て
+
+  # パブリックサブネット2の作成
+  PublicSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: '10.1.2.0/24'
+      AvailabilityZone: !Select [ 1, !GetAZs '' ]  # !GetAZs ''は利用可能なアベイラビリティゾーンをリストで取得し、!Select [1, ...]は二番目のゾーンを選択します。
+      MapPublicIpOnLaunch: true
+
+  # ルートテーブル(パブリックサブネット)
+  PublicSubnetRouteTable:
+    Type: 'AWS::EC2::RouteTable'
+    Properties:
+      VpcId: !Ref VPC  # 作成したVPCにルートテーブルを関連付け
+
+  # インターネット通信(インターネットゲートウェイにルーティング)
+  InternetRoute: 
+    Type: 'AWS::EC2::Route'
+    Properties:
+      RouteTableId: !Ref PublicSubnetRouteTable
+      DestinationCidrBlock: '0.0.0.0/0'  # 全てのインターネット通信
+      GatewayId: !Ref InternetGateway  # インターネットゲートウェイを指定
+
+  # パブリックサブネット1にルートテーブルを関連付け
+  PublicSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicSubnetRouteTable
+      SubnetId: !Ref PublicSubnet1
+  
+  # パブリックサブネット2にルートテーブルを関連付け
+  PublicSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicSubnetRouteTable
+      SubnetId: !Ref PublicSubnet2
+
+  # プライベートサブネット1の作成
+  PrivateSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: "10.1.4.0/24"
+      AvailabilityZone: !Select [ 0, !GetAZs '' ]  # !GetAZs ''は利用可能なアベイラビリティゾーンをリストで取得し、!Select [0, ...]は最初のゾーンを選択
+
+  # プライベートサブネット2の作成
+  PrivateSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: "10.1.5.0/24"
+      AvailabilityZone: !Select [ 1, !GetAZs '' ] # !GetAZs ''は利用可能なアベイラビリティゾーンをリストで取得し、!Select [1, ...]は二番目のゾーンを選択
+
+  # アプリケーションロードバランサー（ALB）の作成
+  ApplicationLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: raisetech-alb  # ALBの名前
+      Subnets:
+        - !Ref PublicSubnet1  # ALBが配置されるサブネット
+        - !Ref PublicSubnet2  # ALBが配置されるサブネット
+      SecurityGroups:
+        - !Ref ALBSecurityGroup  # ALBに適用するセキュリティグループ
+      Scheme: internet-facing  # インターネットからアクセス可能にする設定
+      LoadBalancerAttributes:
+        - Key: idle_timeout.timeout_seconds
+          Value: '60'  # アイドルタイムアウトの設定（秒）
+
+  # リスナーの作成
+  ALBListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - Type: fixed-response  # 「固定レスポンス」を指定
+          FixedResponseConfig:
+            StatusCode: 200  # HTTPステータスコード(OK)
+            ContentType: text/plain  # コンテンツタイプ(プレーンテキスト)
+            MessageBody: "OK"  # レスポンス本文
+      LoadBalancerArn: !Ref ApplicationLoadBalancer  # ALBのARNを参照
+      Port: 80  # リスナーがリッスンするポート
+      Protocol: HTTP  # 使用するプロトコル
+
+  # ALBのターゲットグループを作成
+  ALBTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      VpcId: !Ref VPC  # ターゲットグループが関連するVPC
+      Name: raisetech-alb-target-group  # ターゲットグループの名前
+      Port: 80  # ターゲットグループ(EC2たち)がリッスンするポート
+      Protocol: HTTP  # 使用するプロトコル
+      HealthCheckIntervalSeconds: 30  # ヘルスチェックのインターバル、ヘルスチェックが30秒ごとに行われるように設定
+      HealthCheckPath: /  # ヘルスチェックのパス
+      HealthCheckTimeoutSeconds: 5  # ヘルスチェックのタイムアウト、ヘルスチェックの応答が5秒以内でない場合、ターゲットは非健康とみなされる
+      HealthyThresholdCount: 3  # 健康な状態の閾値、3回連続してヘルスチェックが成功した場合にターゲットが「健康」と見なされる
+      UnhealthyThresholdCount: 3  # 非健康な状態の閾値、3回連続してヘルスチェックが失敗した場合にターゲットが「非健康」と見なされる
+      TargetType: instance
+      Targets:
+        - Id: !Ref EC2Instance  # EC2インスタンスIDを指定（適切なターゲットIDを設定
+
+  # セキュリティグループの作成(ALB用)
+  ALBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup  # リソース名
+    Properties:
+      VpcId: !Ref VPC
+      GroupDescription: Enable HTTP and HTTPS access to ALB
+      SecurityGroupIngress:  # インバウンドトラヒックの設定
+        - IpProtocol: tcp  # 通信プロトコル
+          FromPort: '80'  # 最小ポート番号
+          ToPort: '80'  # 最大ポート番号
+          CidrIp: "153.187.12.9/32"  # HTTPが許可するIPアドレス
+        - IpProtocol: tcp  # 通信プロトコル
+          FromPort: '443'  # 最小ポート番号
+          ToPort: '443'  # 最大ポート番号
+          CidrIp: "153.187.12.9/32"  # HTTPSが許可するIPアドレス
+
+  # IAMロールの作成（EC2インスタンス用）
+  EC2Role:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service: "ec2.amazonaws.com"  # 許可リソース
+            Action: "sts:AssumeRole"
+  
+  # IAMインスタンスプロファイルの作成
+  EC2InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+        - !Ref EC2Role  # IAMロールをインスタンスプロファイルに関連付け
+
+  # EC2インスタンス用のIAMポリシーの作成
+  EC2Policy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: "EC2toS3Policy"
+      Roles: 
+        - !Ref EC2Role
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Action:
+              - "s3:GetObject"
+              - "s3:PutObject"
+              - "s3:ListBucket"
+            Resource: 
+              - "arn:aws:s3:::raiseitech-bucket/*"
+              - "arn:aws:s3:::raiseitech-bucket"
+
+  # EC2インスタンスの作成  
+  EC2Instance:  
+    Type: AWS::EC2::Instance  
+    Properties:  
+      InstanceType: t2.micro  # EC2インスタンスのタイプ
+      ImageId: ami-0a6fd4c92fc6ed7d5  # 使用するAMIのID(Amazon Linux 2023)
+      KeyName: raisetech-kypr  # SSHキーの名前
+      SecurityGroupIds:  
+        - !Ref EC2SecurityGroup    # EC2インスタンスに適用するセキュリティグループ
+      SubnetId: !Ref PublicSubnet1  # EC2インスタンスが配置されるサブネット
+      IamInstanceProfile : !Ref EC2InstanceProfile  # IAMロールを関連付ける
+      Tags:  
+        - Key: Name  
+          Value: raisetech-ec2  # EC2インスタンスのタグ（名前）
+  
+  # セキュリティグループの作成（EC2用）  
+  EC2SecurityGroup:  
+    Type: AWS::EC2::SecurityGroup  # リソース名
+    Properties:  
+      VpcId: !Ref VPC  
+      GroupDescription: Enable HTTP and SSH access to EC2 instances  
+      SecurityGroupIngress:  # インバウンドトラヒックの設定
+        - IpProtocol: tcp  # 通信プロトコル
+          FromPort: '80'  # 最小ポート番号
+          ToPort: '80'  # 最大ポート番号
+          SourceSecurityGroupId: !Ref ALBSecurityGroup  # HTTPは、ALBからのトラフィックのみ許可する
+        - IpProtocol: tcp  # 通信プロトコル
+          FromPort: '443'  # 最小ポート番号
+          ToPort: '443'  # 最大ポート番号
+          SourceSecurityGroupId: !Ref ALBSecurityGroup  # HTTPSは、ALBからのトラフィックのみ許可する
+        - IpProtocol: tcp  # 通信プロトコル
+          FromPort: '22'  # 最小ポート番号
+          ToPort: '22'  # 最大ポート番号
+          CidrIp: "153.187.12.9/32"  # SSHが許可するIPアドレス
+    
+  # RDSインスタンスの作成  
+  RDSInstance:  
+    Type: AWS::RDS::DBInstance  
+    Properties:  
+      DBInstanceClass: db.t3.micro  # RDSのインスタンスタイプ
+      Engine: MySQL    # RDSで使用するデータベースエンジン
+      EngineVersion: "8.0.39"  # MySQLバージョン
+      MasterUsername: !Ref DBUsername  # 管理者ユーザー名
+      MasterUserPassword: !Ref DBPassword # 管理者ユーザーパスワード
+      DBInstanceIdentifier: raisetech-database  # RDSインスタンスの識別子
+      AllocatedStorage: '10'  # ストレージサイズ（GB）
+      VPCSecurityGroups:  
+        - !Ref RDSSecurityGroup  # RDSインスタンスに適用するセキュリティグループ
+      DBSubnetGroupName: !Ref RDSSubnetGroup  # DBサブネットグループ
+      MultiAZ: false  #マルチAZ無効
+      PubliclyAccessible: false  # パブリックアクセス無効
+      BackupRetentionPeriod: 0  # バックアップを保持しない
+    UpdateReplacePolicy: Delete  # テーブル更新時にデータを削除
+    DeletionPolicy: Delete  # リソース削除時に削除
+    
+  # RDS用DBサブネットグループの作成  
+  RDSSubnetGroup:  
+    Type: AWS::RDS::DBSubnetGroup  
+    Properties:  
+      DBSubnetGroupDescription: Subnet group for RDS
+      SubnetIds:
+        - !Ref PrivateSubnet1
+        - !Ref PrivateSubnet2
+    
+  # セキュリティグループの作成（RDS用）  
+  RDSSecurityGroup:  
+    Type: AWS::EC2::SecurityGroup  
+    Properties:  
+      VpcId: !Ref VPC  
+      GroupDescription: Enable MySQL access from EC2 instances  
+      SecurityGroupIngress:  # インバウンドトラヒックの設定
+        - IpProtocol: tcp  # 通信プロトコル
+          FromPort: '3306'  # 最小ポート番号
+          ToPort: '3306'  # 最大ポート番号
+          SourceSecurityGroupId: !Ref EC2SecurityGroup  # MySQL/Auroraについて、EC2のトラフィックにのみ許可
+  
+  # S3バケットの作成
+  S3Bucket:  
+    Type: 'AWS::S3::Bucket'
+    Properties:  
+      BucketName: 'raiseitech-bucket' # バケット名称
