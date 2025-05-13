@@ -10,7 +10,7 @@
 3. 自動的にディレクトリとコンフィグファイルが生成(新規ブランチに生成)されるので、提供された以下のコンフィグファイルに置き換え
 https://github.com/MasatoshiMizumoto/raisetech_documents/blob/main/aws/samples/circleci/config.yml
 4. パイプラインを実行すると失敗
-5. エラーに従ってテンプレートファイルを修正（RDSのパスワードが静的なパラメータとなっていたため、Secrets Managerを参照するように修正）し、push
+5. 警告に従ってテンプレートファイルを修正（RDSのパスワードが静的なパラメータとなっていたため、Secrets Managerを参照するように修正）し、push
 6. テンプレートファイルをpushすることで、自動でパイプラインが実行され成功
 
 ## 感想
