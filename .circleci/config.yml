@@ -15,13 +15,10 @@ jobs:
             cfn-lint -i W3002 -t cloudformation/*.yml
 
   deploy:
-    parameters:
-      target_host:
-        type: string
     docker:
       - image: cimg/python:3.11
     environment:
-      TARGET_HOST: << parameters.target_host >>
+      TARGET_HOST: "18.183.84.164"
       SSH_KEY_PATH: /home/circleci/.ssh/id_rsa
     steps:
       - checkout
@@ -41,13 +38,10 @@ jobs:
             ansible-playbook -i ansible/hosts ansible/playbook.yml
 
   test:
-    parameters:
-      target_host:
-        type: string
     docker:
       - image: cimg/python:3.11
     environment:
-      TARGET_HOST: << parameters.target_host >>
+      TARGET_HOST: "18.183.84.164"
       SSH_KEY_PATH: /home/circleci/.ssh/id_rsa
     steps:
       - checkout
@@ -74,9 +68,7 @@ workflows:
       - deploy:
           requires:
             - cfn-lint
-          target_host: "13.231.228.188"
       - test:
           requires:
             - deploy
-          target_host: "13.231.228.188"
 
