@@ -2,8 +2,7 @@ version: 2.1
 
 orbs:
   python: circleci/python@2.0.3
-
-parameters:
+Parameters:
   target_host:
     type: string
     default: "35.77.198.113"
@@ -19,7 +18,7 @@ jobs:
           command: |
             cfn-lint -i W3002 -t cloudformation/*.yml
 
-  deploy-and-test:
+  deploy:
     docker:
       - image: cimg/python:3.11
     environment:
@@ -27,20 +26,16 @@ jobs:
       SSH_KEY_PATH: /home/circleci/.ssh/id_rsa
     steps:
       - checkout
-
       - run:
-          name: Install dependencies
+          name: Install Ansible
           command: |
             sudo apt update
-            sudo apt install -y ansible ruby ruby-dev build-essential curl
-            echo 'export GEM_HOME="$HOME/.gem"' >> $BASH_ENV
-            echo 'export PATH="$HOME/.gem/bin:$PATH"' >> $BASH_ENV
-            source $BASH_ENV
-            gem install serverspec rake
+            sudo apt install -y ansible
 
       - run:
           name: Generate Ansible inventory
           command: |
+            mkdir -p ansible
             echo "[web]" > ansible/hosts
             echo "${TARGET_HOST} ansible_user=ec2-user ansible_ssh_private_key_file=${SSH_KEY_PATH}" >> ansible/hosts
 
@@ -49,6 +44,24 @@ jobs:
           command: |
             ansible-playbook -i ansible/hosts ansible/playbook.yml
 
+  test:
+    docker:
+      - image: cimg/python:3.11
+    environment:
+      TARGET_HOST: << pipeline.parameters.target_host >>
+      SSH_KEY_PATH: /home/circleci/.ssh/id_rsa
+    steps:
+      - checkout
+      - run:
+          name: Install Serverspec
+          command: |
+            sudo apt update
+            sudo apt install -y ruby ruby-dev build-essential curl
+            echo 'export GEM_HOME="$HOME/.gem"' >> $BASH_ENV
+            echo 'export PATH="$HOME/.gem/bin:$PATH"' >> $BASH_ENV
+            source $BASH_ENV
+            gem install serverspec rake
+
       - run:
           name: Run ServerSpec Tests
           command: |
@@ -56,8 +69,13 @@ jobs:
             rake spec
 
 workflows:
-  raisetech:
-    jobs:
+  version: 2
+     jobs:
       - cfn-lint
-      - deploy-and-test:
+      - deploy
+          requires:
+            - cfn-lint
+      - test
+          requires:
+            - deploy
 
