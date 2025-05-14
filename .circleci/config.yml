@@ -15,6 +15,9 @@ jobs:
             cfn-lint -i W3002 -t cloudformation/*.yml
 
   deploy:
+    parameters:
+      target_host:
+        type: string
     docker:
       - image: cimg/python:3.11
     environment:
@@ -38,6 +41,9 @@ jobs:
             ansible-playbook -i ansible/hosts ansible/playbook.yml
 
   test:
+    parameters:
+      target_host:
+        type: string
     docker:
       - image: cimg/python:3.11
     environment:
