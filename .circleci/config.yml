@@ -28,6 +28,10 @@ jobs:
             sudo apt update
             sudo apt install -y ansible
       - run:
+          name: Add host to known_hosts
+          command: |
+            ssh-keyscan -H ${TARGET_HOST} >> ~/.ssh/known_hosts
+      - run:
           name: Generate Ansible Inventory
           command: |
             echo "[web]" > ansible/hosts
