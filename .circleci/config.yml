@@ -74,9 +74,9 @@ workflows:
       - deploy:
           requires:
             - cfn-lint
-          target_host: "35.77.198.113"
+          target_host: "13.231.228.188"
       - test:
           requires:
             - deploy
-          target_host: "35.77.198.113"
+          target_host: "13.231.228.188"
 
