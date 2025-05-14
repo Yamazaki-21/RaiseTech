@@ -1,10 +1,10 @@
 ---
-- name: Install nginx
+- name: Install nginx on RedHat
   become: yes
-  apt:
+  yum:
     name: nginx
     state: present
-  when: ansible_os_family == "Debian"
+  when: ansible_os_family == "RedHat"
 
 - name: Start nginx service
   become: yes
