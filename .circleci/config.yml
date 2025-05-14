@@ -18,7 +18,7 @@ jobs:
     docker:
       - image: cimg/python:3.11
     environment:
-      TARGET_HOST: << pipeline.parameters.target_host >>  # パラメータ参照
+      TARGET_HOST: << parameters.target_host >>
       SSH_KEY_PATH: /home/circleci/.ssh/id_rsa
     steps:
       - checkout
@@ -42,7 +42,7 @@ jobs:
     docker:
       - image: cimg/python:3.11
     environment:
-      TARGET_HOST: << pipeline.parameters.target_host >>  # パラメータ参照
+      TARGET_HOST: << parameters.target_host >>
       SSH_KEY_PATH: /home/circleci/.ssh/id_rsa
     steps:
       - checkout
@@ -63,21 +63,12 @@ jobs:
 
 workflows:
   version: 2
-  build-deploy-test:
-    parameters:
-      target_host:
-        type: string
-        default: "35.77.198.113"
-    jobs:
-      - cfn-lint
-      - deploy:
-          requires:
-            - cfn-lint
-          parameters:
-            target_host: << pipeline.parameters.target_host >>
-      - test:
-          requires:
-            - deploy
-          parameters:
-            target_host: << pipeline.parameters.target_host >>
+  jobs:
+    - cfn-lint
+    - deploy:
+        requires:
+          - cfn-lint
+    - test:
+        requires:
+          - deploy
 
