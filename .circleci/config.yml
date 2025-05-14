@@ -1,6 +1,13 @@
 version: 2.1
+
 orbs:
   python: circleci/python@2.0.3
+
+parameters:
+  target_host:
+    type: string
+    default: "35.77.198.113"
+
 jobs:
   cfn-lint:
     executor: python/default
@@ -11,7 +18,45 @@ jobs:
           name: run cfn-lint
           command: |
             cfn-lint -i W3002 -t cloudformation/*.yml
+
+  deploy-and-test:
+    docker:
+      - image: cimg/python:3.11
+    environment:
+      TARGET_HOST: << pipeline.parameters.target_host >>
+      SSH_KEY_PATH: /home/circleci/.ssh/id_rsa
+    steps:
+      - checkout
+
+      - run:
+          name: Install dependencies
+          command: |
+            sudo apt update
+            sudo apt install -y ansible ruby ruby-dev build-essential curl
+            gem install serverspec rake
+
+      - run:
+          name: Generate Ansible inventory
+          command: |
+            echo "[web]" > ansible/hosts
+            echo "${TARGET_HOST} ansible_user=ec2-user ansible_ssh_private_key_file=${SSH_KEY_PATH}" >> ansible/hosts
+
+      - run:
+          name: Run Ansible Playbook
+          command: |
+            ansible-playbook -i ansible/hosts ansible/playbook.yml
+
+      - run:
+          name: Run ServerSpec Tests
+          command: |
+            cd serverspec
+            rake spec
+
 workflows:
   raisetech:
     jobs:
       - cfn-lint
+      - deploy-and-test:
+          requires:
+            - cfn-lint
+
