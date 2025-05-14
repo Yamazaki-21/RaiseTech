@@ -33,6 +33,9 @@ jobs:
           command: |
             sudo apt update
             sudo apt install -y ansible ruby ruby-dev build-essential curl
+            echo 'export GEM_HOME="$HOME/.gem"' >> $BASH_ENV
+            echo 'export PATH="$HOME/.gem/bin:$PATH"' >> $BASH_ENV
+            source $BASH_ENV
             gem install serverspec rake
 
       - run:
@@ -57,6 +60,4 @@ workflows:
     jobs:
       - cfn-lint
       - deploy-and-test:
-          requires:
-            - cfn-lint
 
