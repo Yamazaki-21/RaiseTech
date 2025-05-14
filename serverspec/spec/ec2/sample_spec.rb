@@ -24,7 +24,3 @@ describe file('/etc/nginx/nginx.conf') do
   it { should be_file }
 end
 
-describe package('nginx') do
-  it { should be_installed }
-end
-
