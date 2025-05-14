@@ -30,6 +30,7 @@ jobs:
       - run:
           name: Add host to known_hosts
           command: |
+            mkdir -p ~/.ssh
             ssh-keyscan -H ${TARGET_HOST} >> ~/.ssh/known_hosts
       - run:
           name: Generate Ansible Inventory
