@@ -1,7 +1,7 @@
 ---
-- name: Install nginx on RedHat
+- name: Install nginx on RedHat (using dnf)
   become: yes
-  yum:
+  dnf:
     name: nginx
     state: present
   when: ansible_os_family == "RedHat"
