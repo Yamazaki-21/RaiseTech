@@ -18,7 +18,7 @@ jobs:
     docker:
       - image: cimg/python:3.11
     environment:
-      TARGET_HOST: "18.183.84.164"
+      TARGET_HOST: "43.207.146.88"
       SSH_KEY_PATH: /home/circleci/.ssh/id_rsa
     steps:
       - checkout
@@ -46,7 +46,7 @@ jobs:
     docker:
       - image: cimg/python:3.11
     environment:
-      TARGET_HOST: "18.183.84.164"
+      TARGET_HOST: "43.207.146.88"
       SSH_KEY_PATH: /home/circleci/.ssh/id_rsa
     steps:
       - checkout
