@@ -4,6 +4,16 @@ orbs:
   python: circleci/python@2.0.3
 
 jobs:
+  cfn-lint:
+    executor: python/default
+    steps:
+      - checkout
+      - run: pip install cfn-lint
+      - run:
+          name: run cfn-lint
+          command: |
+            cfn-lint -i W3002 -t cloudformation/*.yml
+
   deploy:
     docker:
       - image: cimg/python:3.11
@@ -59,7 +69,10 @@ workflows:
   version: 2
   raisetech:
     jobs:
-      - deploy
+      - cfn-lint
+      - deploy:
+          requires:
+            - cfn-lint
       - test:
           requires:
             - deploy
