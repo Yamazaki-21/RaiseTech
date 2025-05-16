@@ -54,8 +54,8 @@ workflows:
   version: 2
   raisetech:
     jobs:
-      - deploy:
+      - deploy
       - test:
           requires:
             - deploy
-          
+
