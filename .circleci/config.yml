@@ -20,7 +20,7 @@ jobs:
       - image: cimg/python:3.11
     steps:
       - checkout
-      - aws-cli/setup:
+      - aws-cli/setup
       - run:
           name: Deploy CloudFormation Stack
           command: |
