@@ -25,7 +25,7 @@ jobs:
           name: Deploy CloudFormation Stack
           command: |
             aws cloudformation deploy \
-              --template-file cloudformation/template.yaml \
+              --template-file cloudformation/template.yml \
               --stack-name raisetech-stack \
               --capabilities CAPABILITY_NAMED_IAM
       - run:
