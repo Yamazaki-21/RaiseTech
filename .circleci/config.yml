@@ -100,15 +100,15 @@ workflows:
   version: 2
   raisetech:
     jobs:
-#      - cfn-lint
-#      - cloudformation:
+      - cfn-lint
+      - cloudformation:
+          requires:
+            - cfn-lint
+#      - cloudformation
+#      - deploy:
 #          requires:
-#            - cfn-lint
-      - cloudformation
-      - deploy:
-          requires:
-            - cloudformation
-      - test:
-          requires:
-            - deploy
+#            - cloudformation
+#      - test:
+#          requires:
+#            - deploy
 
