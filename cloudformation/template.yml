@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: Raisetech lecture10 (CloudFormation Template)
+Description: Raisetech lecture13(CloudFormation Template)
 
 Parameters:
   DBUsername:
@@ -247,7 +247,21 @@ Resources:
           FromPort: 22  # 最小ポート番号
           ToPort: 22  # 最大ポート番号
           CidrIp: !Ref MyIpAdress  # SSHが許可するIPアドレス
-    
+
+  # Secrets Manager 
+  DBPasswordSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: my-db-secret  # シークレットの名前
+      Description: "RDS DB credentials"
+      GenerateSecretString:
+        SecretStringTemplate: !Sub '{"username": "${DBUsername}"}' # ユーザー名をテンプレートに埋め込む
+        GenerateStringKey: password  # ランダムパスワードのキー名
+        PasswordLength: 16  # パスワードの長さ
+        ExcludeCharacters: '"@/\\"'  # 除外する文字（必要に応じて変更）
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+
   # RDSインスタンスの作成  
   RDSInstance:  
     Type: AWS::RDS::DBInstance  
@@ -256,7 +270,7 @@ Resources:
       Engine: MySQL    # RDSで使用するデータベースエンジン
       EngineVersion: 8.0.39  # MySQLバージョン
       MasterUsername: !Ref DBUsername  # 管理者ユーザー名
-      MasterUserPassword: '{{resolve:secretsmanager:my-db-secret}}' # 管理者ユーザーパスワード
+      MasterUserPassword: '{{resolve:secretsmanager:my-db-secret:SecretString:password}}' # 管理者ユーザーパスワード
       DBInstanceIdentifier: raisetech-database  # RDSインスタンスの識別子
       AllocatedStorage: 10  # ストレージサイズ（GB）
       VPCSecurityGroups:  
@@ -267,6 +281,7 @@ Resources:
       BackupRetentionPeriod: 0  # バックアップを保持しない
     UpdateReplacePolicy: Delete  # テーブル更新時にデータを削除
     DeletionPolicy: Delete  # リソース削除時に削除
+    DependsOn: DBPasswordSecret
     
   # RDS用DBサブネットグループの作成  
   RDSSubnetGroup:  
@@ -294,6 +309,8 @@ Resources:
     Type: AWS::S3::Bucket
     Properties:  
       BucketName: raiseitech-bucket # バケット名称
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
 
 Outputs:
   EC2InstancePublicIP:
