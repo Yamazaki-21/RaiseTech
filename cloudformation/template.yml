@@ -294,3 +294,9 @@ Resources:
     Type: AWS::S3::Bucket
     Properties:  
       BucketName: raiseitech-bucket # バケット名称
+
+Outputs:
+  EC2InstancePublicIP:
+    Description: "Public IP address of the EC2 instance"
+    Value: !GetAtt EC2Instance.PublicIp
+
