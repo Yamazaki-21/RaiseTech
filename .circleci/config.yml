@@ -20,12 +20,7 @@ jobs:
       - image: cimg/python:3.11
     steps:
       - checkout
-
       - aws-cli/setup:
-          aws-access-key-id: AWS_ACCESS_KEY_ID
-          aws-secret-access-key: AWS_SECRET_ACCESS_KEY
-          aws-region: AWS_REGION
-
       - run:
           name: Deploy CloudFormation Stack
           command: |
@@ -33,12 +28,10 @@ jobs:
               --template-file cloudformation/template.yaml \
               --stack-name raisetech-stack \
               --capabilities CAPABILITY_NAMED_IAM
-
       - run:
           name: Wait for CloudFormation Stack Completion
           command: |
             aws cloudformation wait stack-create-complete --stack-name raisetech-stack
-
       - run:
           name: Get EC2 Instance Public IP
           command: |
