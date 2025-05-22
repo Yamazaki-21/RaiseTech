@@ -70,14 +70,10 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install Ansible (>=2.13) and boto libs
+          name: Install Ansible 2.13 & AWS collection
           command: |
-            sudo apt-get update
-            sudo apt-get install -y python3-pip
-            pip install "ansible>=2.13,<3.0" boto boto3 botocore
-      - run:
-          name: Install Ansible community.aws collection
-          command: |
+            pip install ansible-core==2.13.10
+            pip install boto boto3 botocore
             ansible-galaxy collection install community.aws
       - attach_workspace:
           at: tmp
