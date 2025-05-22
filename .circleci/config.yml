@@ -82,10 +82,6 @@ jobs:
           command: |
             echo '[defaults]' > ansible/ansible.cfg
             echo 'collections_paths = ./collections:~/.ansible/collections' >> ansible/ansible.cfg
-      - run:
-         name: Debug Ansible Collections
-         command: |
-           ansible-galaxy collection list
       - attach_workspace:
           at: tmp
       - run:
