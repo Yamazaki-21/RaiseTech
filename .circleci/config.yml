@@ -74,7 +74,7 @@ jobs:
             pip install --upgrade pip
             pip uninstall -y ansible-core
             pip install ansible boto3 botocore
-            ansible-galaxy collection install amazon.aws --force
+            ansible-galaxy collection install amazon.aws:>=5.0.0 community.aws:>=5.0.
             ansible --version
             ansible-galaxy collection list
       - run:
