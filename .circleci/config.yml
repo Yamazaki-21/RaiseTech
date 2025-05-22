@@ -74,14 +74,14 @@ jobs:
             pip install --upgrade pip
             pip uninstall -y ansible-core
             pip install ansible boto3 botocore
-            ansible-galaxy collection install amazon.aws:5.5.0 --force
+            ansible-galaxy collection install amazon.aws --force
             ansible --version
             ansible-galaxy collection list
       - run:
           name: Generate ansible.cfg
           command: |
-            echo '[defaults]' > ansible/ansible.cfg
-            echo 'collections_paths = ./collections:~/.ansible/collections' >> ansible/ansible.cfg
+            echo '[defaults]' > ansible.cfg
+            echo 'collections_paths = /home/circleci/.pyenv/versions/3.11.12/lib/python3.11/site-packages/ansible_collections:/home/circleci/.ansible/collections' >> ansible.cfg
       - attach_workspace:
           at: tmp
       - run:
