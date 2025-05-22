@@ -54,7 +54,11 @@ jobs:
           name: Install Ansible
           command: |
             sudo apt update
-            sudo apt install -y ansible
+            sudo apt install -y ansible python3-boto3
+    - run:
+        name: Install Ansible community.aws collection
+        command: |
+          ansible-galaxy collection install community.aws
       - run:
           name: Add host to known_hosts
           command: |
@@ -104,11 +108,10 @@ workflows:
       - cloudformation:
           requires:
             - cfn-lint
-#      - cloudformation
-#      - deploy:
-#          requires:
-#            - cloudformation
-#      - test:
-#          requires:
-#            - deploy
+      - deploy:
+          requires:
+            - cloudformation
+      - test:
+          requires:
+            - deploy
 
