@@ -72,11 +72,8 @@ jobs:
           name: Install Ansible & AWS Modules
           command: |
             pip install --upgrade pip
-            pip uninstall -y ansible-core
             pip install ansible boto3 botocore
             ansible-galaxy collection install amazon.aws:>=5.0.0 community.aws:>=5.0.
-            ansible --version
-            ansible-galaxy collection list
       - run:
           name: Generate ansible.cfg
           command: |
@@ -96,6 +93,7 @@ jobs:
           command: |
             echo "[web]" > ansible/hosts
             echo "${TARGET_HOST} ansible_user=ec2-user ansible_ssh_private_key_file=${SSH_KEY_PATH}" >> ansible/hosts
+            cat ansible/hosts
       - run:
           name: Run Ansible Playbook
           command: |
