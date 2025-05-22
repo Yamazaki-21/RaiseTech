@@ -76,16 +76,12 @@ jobs:
             pip install ansible boto3 botocore
             ansible-galaxy collection install amazon.aws:5.5.0 --force
             ansible --version
+            ansible-galaxy collection list
       - run:
           name: Generate ansible.cfg
           command: |
             echo '[defaults]' > ansible/ansible.cfg
             echo 'collections_paths = ./collections:~/.ansible/collections' >> ansible/ansible.cfg
-      - run:
-          name: Run Ansible Playbook
-          command: |
-            export PYTHONPATH=$(python -c "import site; print(site.getsitepackages()[0])")
-            ansible-playbook -i ansible/hosts ansible/playbook.yml
       - run:
          name: Debug Ansible Collections
          command: |
