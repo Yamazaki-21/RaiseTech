@@ -87,7 +87,7 @@
 
 - name: Get RDS password from Secrets Manager
   community.aws.aws_secret:
-    name: my-db-secret
+    name: db-secret
     region: ap-northeast-1
   register: secret_result
 

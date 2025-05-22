@@ -28,12 +28,13 @@ jobs:
               --template-file cloudformation/secrets-template.yml \
               --stack-name secrets-stack \
               --capabilities CAPABILITY_NAMED_IAM \
-              --parameter-overrides DBUsername=User
+              --parameter-overrides DBUsername=Admin
+
       - run:
           name: Wait for SecretsManager Stack Completion
           command: |
             aws cloudformation wait stack-create-complete --stack-name secrets-stack
-
+    
       - run:
           name: Deploy CloudFormation Stack
           command: |
@@ -41,7 +42,7 @@ jobs:
               --template-file cloudformation/main-template.yml \
               --stack-name raisetech-stack \
               --capabilities CAPABILITY_NAMED_IAM \
-              --parameter-overrides DBUsername=User MyIpAdress=133.32.183.11/32
+              --parameter-overrides DBUsername=Admin MyIpAdress=133.32.183.11/32
       - run:
           name: Wait for CloudFormation Stack Completion
           command: |

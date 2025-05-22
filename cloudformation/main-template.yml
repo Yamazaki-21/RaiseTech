@@ -256,7 +256,7 @@ Resources:
       Engine: MySQL    # RDSで使用するデータベースエンジン
       EngineVersion: 8.0.39  # MySQLバージョン
       MasterUsername: !Ref DBUsername  # 管理者ユーザー名
-      MasterUserPassword: '{{resolve:secretsmanager:my-db-secret:SecretString:password}}' # 管理者ユーザーパスワード
+      MasterUserPassword: '{{resolve:secretsmanager:db-secret:SecretString:password}}' # 管理者ユーザーパスワード
       DBInstanceIdentifier: raisetech-database  # RDSインスタンスの識別子
       AllocatedStorage: 10  # ストレージサイズ（GB）
       VPCSecurityGroups:  
