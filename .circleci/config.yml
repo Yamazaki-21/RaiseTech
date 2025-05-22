@@ -72,9 +72,7 @@ jobs:
       - run:
           name: Install Ansible full and amazon.aws collection
           command: |
-            pip install --upgrade pip setuptools wheel
-            pip uninstall -y ansible-core ansible || true
-            pip install "ansible>=2.13,<2.15"
+            pip install ansible==2.14.0
             ansible-galaxy collection install amazon.aws:5.7.0
       - attach_workspace:
           at: tmp
