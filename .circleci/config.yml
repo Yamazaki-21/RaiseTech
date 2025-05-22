@@ -29,7 +29,6 @@ jobs:
               --stack-name secrets-stack \
               --capabilities CAPABILITY_NAMED_IAM \
               --parameter-overrides DBUsername=Admin
-
       - run:
           name: Wait for SecretsManager Stack Completion
           command: |
@@ -73,7 +72,7 @@ jobs:
          name: Setup Ansible and AWS Collection
          command: |
            pip install --upgrade pip
-           pip install ansible-core==2.14.7
+           pip install ansible-core==2.14.7 boto3 botocore
            ansible-galaxy collection install amazon.aws:5.5.0
       - attach_workspace:
           at: tmp
