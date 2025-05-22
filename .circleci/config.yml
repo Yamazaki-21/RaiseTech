@@ -63,7 +63,7 @@ jobs:
 
   deploy:
     docker:
-      - image: cimg/python:3.11
+      - image: cimg/python:3.10
     environment:
       TARGET_HOST: ""
       SSH_KEY_PATH: ~/.ssh/id_rsa
