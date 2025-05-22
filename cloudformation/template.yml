@@ -214,15 +214,15 @@ Resources:
               - s3:PutObject
               - s3:ListBucket
             Resource: 
-              - arn:aws:s3:::raiseitech-bucket/*
-              - arn:aws:s3:::raiseitech-bucket
+              - arn:aws:s3:::raiseitech-test-bucket/*
+              - arn:aws:s3:::raiseitech-test-bucket
 
   # EC2インスタンスの作成  
   EC2Instance:  
     Type: AWS::EC2::Instance  
     Properties:  
-      InstanceType: t2.micro  # EC2インスタンスのタイプ
-      ImageId: ami-0a6fd4c92fc6ed7d5  # 使用するAMIのID(Amazon Linux 2023)
+      InstanceType: t2.small  # EC2インスタンスのタイプ
+      ImageId: ami-037843ed9009f7d41  # 使用するAMIのID(Amazon Linux 2)
       KeyName: raisetech-kypr  # SSHキーの名前
       SecurityGroupIds:  
         - !Ref EC2SecurityGroup    # EC2インスタンスに適用するセキュリティグループ
@@ -308,7 +308,7 @@ Resources:
   S3Bucket:  
     Type: AWS::S3::Bucket
     Properties:  
-      BucketName: raiseitech-bucket # バケット名称
+      BucketName: raiseitech-test-bucket # バケット名称
     DeletionPolicy: Delete
     UpdateReplacePolicy: Delete
 
