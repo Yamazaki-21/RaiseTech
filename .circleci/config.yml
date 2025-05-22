@@ -100,8 +100,7 @@ jobs:
           name: Add host to known_hosts 
           command: |
             echo "TARGET_HOST: ${TARGET_HOST}"
-            ping -c 3 ${TARGET_HOST} || echo "Ping failed"
-            nc -zv ${TARGET_HOST} 22 || echo "Port 22 closed"
+            nc -zv ${TARGET_HOST} 22 || echo "Port 22 closed or host unreachable"
             mkdir -p ~/.ssh
             ssh-keyscan -H ${TARGET_HOST} >> ~/.ssh/known_hosts || echo "ssh-keyscan failed"
             cat ~/.ssh/known_hosts || echo "cat failed"
