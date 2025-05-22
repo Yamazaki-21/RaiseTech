@@ -74,6 +74,7 @@ jobs:
             pip install --upgrade pip
             pip install ansible boto3 botocore
             ansible-galaxy collection install amazon.aws:5.5.0 --force
+            ansible --version
       - run:
           name: Generate ansible.cfg
           command: |
