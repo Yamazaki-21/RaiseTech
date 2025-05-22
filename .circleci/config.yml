@@ -97,6 +97,13 @@ jobs:
             echo "${TARGET_HOST} ansible_user=ec2-user ansible_ssh_private_key_file=${SSH_KEY_PATH}" >> ansible/hosts
             cat ansible/hosts
       - run:
+          name: Add host to known_hosts 
+          command: |
+            echo "TARGET_HOST=${EC2_PUBLIC_IP}" >> $BASH_ENV
+            source $BASH_ENV
+            mkdir -p ~/.ssh
+            ssh-keyscan -H ${TARGET_HOST} >> ~/.ssh/known_hosts 
+      - run:
           name: Run Ansible Playbook
           command: |
             ansible-playbook -i ansible/hosts ansible/playbook.yml
