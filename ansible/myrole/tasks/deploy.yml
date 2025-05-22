@@ -75,7 +75,7 @@
     mode: '0775'
 
 - name: Get CloudFormation stack outputs
-  community.aws.cloudformation_info:
+  amazon.aws.cloudformation_info:
     stack_name: raisetech-stack
   register: cfn_outputs
 
