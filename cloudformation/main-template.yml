@@ -228,6 +228,21 @@ Resources:
         - !Ref EC2SecurityGroup    # EC2インスタンスに適用するセキュリティグループ
       SubnetId: !Ref PublicSubnet1  # EC2インスタンスが配置されるサブネット
       IamInstanceProfile : !Ref EC2InstanceProfile  # IAMロールを関連付ける
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          yum update -y
+          yum groupinstall -y "Development Tools"
+          yum install -y gcc zlib-devel bzip2 bzip2-devel readline-devel sqlite sqlite-devel openssl-devel xz xz-devel libffi-devel wget
+
+          cd /usr/src
+          wget https://www.python.org/ftp/python/3.8.18/Python-3.8.18.tgz
+          tar xzf Python-3.8.18.tgz
+          cd Python-3.8.18
+          ./configure --enable-optimizations
+          make altinstall
+
+          ln -s /usr/local/bin/python3.8 /usr/bin/python3
       Tags:  
         - Key: Name  
           Value: raisetech-ec2  # EC2インスタンスのタグ（名前）
