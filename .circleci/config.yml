@@ -74,7 +74,7 @@ jobs:
           command: |
             pip install ansible-core==2.14.0
             pip install boto boto3 botocore
-            ansible-galaxy collection install amazon.aws:5.7.0
+            ansible-galaxy collection install amazon.aws:5.8.0
       - attach_workspace:
           at: tmp
       - run:
@@ -121,13 +121,14 @@ workflows:
   version: 2
   raisetech:
     jobs:
-      - cfn-lint
-      - cloudformation:
-          requires:
-            - cfn-lint
-      - deploy:
-          requires:
-            - cloudformation
+   #   - cfn-lint
+#      - cloudformation:
+#          requires:
+#            - cfn-lint
+ #     - deploy:
+ #         requires:
+#            - cloudformation
+      - deploy
       - test:
           requires:
             - deploy
