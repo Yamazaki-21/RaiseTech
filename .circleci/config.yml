@@ -71,9 +71,12 @@ jobs:
       - run:
          name: Setup Ansible and AWS Collection
          command: |
-           pip install --upgrade pip
-           pip install ansible-core==2.14.7 boto3 botocore requests
-           ansible-galaxy collection install amazon.aws:5.5.0
+#           pip install --upgrade pip
+#           pip install ansible-core==2.14.7 boto3 botocore requests
+#           ansible-galaxy collection install amazon.aws:5.5.0
+            pip install --upgrade pip
+            pip install ansible boto3 botocore requests
+            ansible-galaxy collection install amazon.aws:5.5.0 --force
       - run:
          name: Debug Ansible Collections
          command: |
