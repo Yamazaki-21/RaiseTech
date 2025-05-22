@@ -72,6 +72,7 @@ jobs:
           name: Install Ansible & AWS Modules
           command: |
             pip install --upgrade pip
+            pip uninstall -y ansible-core
             pip install ansible boto3 botocore
             ansible-galaxy collection install amazon.aws:5.5.0 --force
             ansible --version
