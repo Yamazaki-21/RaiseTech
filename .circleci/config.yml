@@ -70,11 +70,11 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install Ansible 2.14 & amazon.aws collection
+          name: Install Ansible full and amazon.aws collection
           command: |
-            pip install ansible-core==2.14.0
-            pip install boto boto3 botocore
-            ansible-galaxy collection install amazon.aws:>=5.0.0
+            pip uninstall -y ansible-core ansible
+            pip install "ansible>=2.13,<2.15"
+            ansible-galaxy collection install amazon.aws:5.7.0
       - attach_workspace:
           at: tmp
       - run:
