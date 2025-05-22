@@ -229,7 +229,7 @@ Resources:
       SubnetId: !Ref PublicSubnet1  # EC2インスタンスが配置されるサブネット
       IamInstanceProfile : !Ref EC2InstanceProfile  # IAMロールを関連付ける
       UserData:
-        Fn::Base64: !Sub |
+        !Base64 |
           #!/bin/bash
           yum update -y
           yum groupinstall -y "Development Tools"
@@ -241,8 +241,9 @@ Resources:
           cd Python-3.8.18
           ./configure --enable-optimizations
           make altinstall
-
+ 
           ln -s /usr/local/bin/python3.8 /usr/bin/python3
+
       Tags:  
         - Key: Name  
           Value: raisetech-ec2  # EC2インスタンスのタグ（名前）
