@@ -267,7 +267,6 @@ Resources:
       BackupRetentionPeriod: 0  # バックアップを保持しない
     UpdateReplacePolicy: Delete  # テーブル更新時にデータを削除
     DeletionPolicy: Delete  # リソース削除時に削除
-    DependsOn: DBPasswordSecret
     
   # RDS用DBサブネットグループの作成  
   RDSSubnetGroup:  
