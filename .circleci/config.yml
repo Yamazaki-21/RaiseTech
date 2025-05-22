@@ -74,7 +74,7 @@ jobs:
           name: Install Ansible & AWS Modules
           command: |
             pip install --upgrade pip
-            pip install ansible boto3 botocore
+            pip install ansible==2.15.3  Boto3 botocore
             ansible-galaxy collection install amazon.aws:>=5.0.0 community.aws:>=5.0.
       - run:
           name: Generate ansible.cfg
