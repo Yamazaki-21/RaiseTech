@@ -22,10 +22,23 @@ jobs:
       - checkout
       - aws-cli/setup
       - run:
+          name: Deploy SecretsManager Stack
+          command: |
+            aws cloudformation deploy \
+              --template-file cloudformation/secrets-template.yml \
+              --stack-name secrets-stack \
+              --capabilities CAPABILITY_NAMED_IAM \
+              --parameter-overrides DBUsername=User
+      - run:
+          name: Wait for SecretsManager Stack Completion
+          command: |
+            aws cloudformation wait stack-create-complete --stack-name secrets-stack
+
+      - run:
           name: Deploy CloudFormation Stack
           command: |
             aws cloudformation deploy \
-              --template-file cloudformation/template.yml \
+              --template-file cloudformation/main-template.yml \
               --stack-name raisetech-stack \
               --capabilities CAPABILITY_NAMED_IAM \
               --parameter-overrides DBUsername=User MyIpAdress=133.32.183.11/32

@@ -248,20 +248,6 @@ Resources:
           ToPort: 22  # 最大ポート番号
           CidrIp: !Ref MyIpAdress  # SSHが許可するIPアドレス
 
-  # Secrets Manager 
-  DBPasswordSecret:
-    Type: AWS::SecretsManager::Secret
-    Properties:
-      Name: my-db-secret  # シークレットの名前
-      Description: "RDS DB credentials"
-      GenerateSecretString:
-        SecretStringTemplate: !Sub '{"username": "${DBUsername}"}' # ユーザー名をテンプレートに埋め込む
-        GenerateStringKey: password  # ランダムパスワードのキー名
-        PasswordLength: 16  # パスワードの長さ
-        ExcludeCharacters: '"@/\\"'  # 除外する文字（必要に応じて変更）
-    DeletionPolicy: Delete
-    UpdateReplacePolicy: Delete
-
   # RDSインスタンスの作成  
   RDSInstance:  
     Type: AWS::RDS::DBInstance  
