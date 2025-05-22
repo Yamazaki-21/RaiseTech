@@ -55,10 +55,10 @@ jobs:
           command: |
             sudo apt update
             sudo apt install -y ansible python3-boto3
-    - run:
-        name: Install Ansible community.aws collection
-        command: |
-          ansible-galaxy collection install community.aws
+      - run:
+          name: Install Ansible community.aws collection
+          command: |
+            ansible-galaxy collection install community.aws
       - run:
           name: Add host to known_hosts
           command: |
