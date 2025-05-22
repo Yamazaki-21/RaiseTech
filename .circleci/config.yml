@@ -38,6 +38,7 @@ jobs:
           name: Deploy CloudFormation Stack
           command: |
             MY_IP=$(curl -s https://checkip.amazonaws.com)
+            echo "MY_IP: ${MY_IP}"
             aws cloudformation deploy \
               --template-file cloudformation/main-template.yml \
               --stack-name raisetech-stack \
