@@ -81,7 +81,7 @@ jobs:
           name: Generate ansible.cfg
           command: |
             echo '[defaults]' > ansible/ansible.cfg
-            echo 'collections_paths = /home/circleci/.pyenv/versions/3.11.12/lib/python3.11/site-packages/ansible_collections:/home/circleci/.ansible/collections' >> ansible.cf
+            echo 'collections_paths = /home/circleci/.pyenv/versions/3.11.12/lib/python3.11/site-packages/ansible_collections:/home/circleci/.ansible/collections' >> ansible/ansible.cf
             cat ansible/ansible.cfg
       - attach_workspace:
           at: tmp
