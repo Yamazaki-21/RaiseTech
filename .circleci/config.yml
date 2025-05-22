@@ -70,16 +70,11 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Check Python and pip versions
-          command: |
-            python --version
-            pip --version
-      - run:
-          name: Install Ansible full and amazon.aws collection
-          command: |
-            pip install --upgrade pip
-            pip install ansible-core==2.14.7 ansible==2.14.7
-            ansible-galaxy collection install amazon.aws:5.5.0
+         name: Setup Ansible and AWS Collection
+         command: |
+           pip install --upgrade pip
+           pip install ansible-core==2.14.7
+           ansible-galaxy collection install amazon.aws:5.5.0
       - attach_workspace:
           at: tmp
       - run:
