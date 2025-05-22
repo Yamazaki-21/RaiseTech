@@ -1,0 +1,86 @@
+---
+- name: Deploy storage.yml
+  template:
+    src: storage.yml.j2
+    dest: "/var/www/rails-app/config/storage.yml"
+    owner: ec2-user
+    group: ec2-user
+    mode: '0775'
+
+- name: Install dependencies for vips
+  yum:
+    name:
+      - glib2-devel
+      - libxml2-devel
+      - libjpeg-turbo-devel
+      - libpng-devel
+      - libtiff-devel
+      - fftw-devel
+      - libexif-devel
+      - libgsf-devel
+      - giflib-devel
+      - libwebp-devel
+      - librsvg2-devel
+#      - libimagequant-devel
+#      - openslide-devel
+      - gobject-introspection-devel
+      - cairo-devel
+      - orc-devel
+      - poppler-glib-devel
+      - gdk-pixbuf2-devel
+      - make
+      - gcc
+      - gcc-c++
+      - tar
+    state: present
+
+- name: Install meson and ninja using pip3
+  pip:
+    name:
+      - meson
+      - ninja
+    executable: pip3
+
+- name: Download libvips source
+  get_url:
+    url: "https://github.com/libvips/libvips/releases/download/v8.16.1/vips-8.16.1.tar.xz"
+    dest: /tmp/vips.tar.xz
+
+- name: Extract libvips
+  unarchive:
+    src: /tmp/vips.tar.xz
+    dest: /tmp/
+    remote_src: yes
+    extra_opts: [--xz]
+
+- name: Build and install libvips using meson and ninja
+  shell: |
+    export PATH=/usr/local/bin:$PATH
+    cd /tmp/vips-8.16.1
+    meson setup build
+    ninja -C build
+    ninja -C build install
+    ldconfig
+
+- name: Ensure libvips shared library path is configured
+  copy:
+    content: "/usr/local/lib64\n"
+    dest: /etc/ld.so.conf.d/libvips.conf
+    mode: '0755'
+
+- name: Run ldconfig to update shared library cache
+  command: ldconfig
+
+- name: Add vips to system PATH
+  lineinfile:
+    path: /etc/profile.d/vips.sh
+    line: 'export PATH="/usr/local/bin:$PATH"'
+    create: yes
+    mode: '0755'
+
+- name: Add pkg-config path for vips
+  lineinfile:
+    path: /etc/profile.d/vips.sh
+    line: 'export PKG_CONFIG_PATH="/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH"'
+
+

@@ -1,0 +1,15 @@
+[Unit]
+Description=Puma HTTP Server
+After=network.target
+
+[Service]
+Type=simple
+User=ec2-user
+Environment=RAILS_ENV=production
+WorkingDirectory=/var/www/rails-app
+ExecStart=/bin/bash -lc 'bundle exec puma -C config/puma.rb'
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+

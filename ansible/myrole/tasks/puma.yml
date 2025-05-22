@@ -1,0 +1,38 @@
+---
+- name: Copy Puma systemd service file from template
+  template:
+    src: puma.service.j2
+    dest: /etc/systemd/system/puma.service
+  become: yes
+
+- name: Copy puma.rb
+  template:
+    src: puma.rb.j2
+    dest: "/var/www/rails-app/config/puma.rb"
+    owner: ec2-user
+    group: ec2-user
+    mode: '0775'
+
+- name: Create directories for Puma (sockets and pids)
+  file:
+    path: "/var/www/rails-app/tmp/{{ item }}"
+    state: directory
+    owner: ec2-user
+    group: ec2-user
+    mode: '0775'
+  loop:
+    - sockets
+    - pids
+
+- name: Reload systemd to pick up the new Puma service file
+  systemd:
+    daemon_reload: yes
+  become: yes
+
+- name: Start and enable Puma service
+  systemd:
+    name: puma
+    state: started
+    enabled: yes
+  become: yes
+

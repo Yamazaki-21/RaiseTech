@@ -1,0 +1,106 @@
+---
+- name: Check if the .git directory exists
+  stat:
+    path: /var/www/rails-app/.git
+  register: git_dir
+
+- name: Clone the Rails app repository if .git does not exist
+  git:
+    repo: 'https://github.com/yuta-ushijima/raisetech-live8-sample-app.git'
+    dest: /var/www/rails-app
+    version: main
+  when: not git_dir.stat.exists
+
+- name: bundle install を実行（rbenvパスを明示）
+  shell: |
+    export HOME=/home/ec2-user
+    export PATH="$HOME/.rbenv/bin:$HOME/.rbenv/shims:$PATH"
+    eval "$(rbenv init - bash)"
+    cd /var/www/rails-app
+    bundle install
+  args:
+    chdir: /var/www/rails-app
+    executable: /bin/bash
+
+- name: yarn install を実行
+  shell: |
+    export HOME=/home/ec2-user
+    export PATH="$HOME/.nvm/versions/node/v17.9.1/bin:$HOME/.rbenv/bin:$HOME/.rbenv/shims:$PATH"
+    eval "$(rbenv init -)"
+    yarn install
+  args:
+    chdir: /var/www/rails-app
+    executable: /bin/bash
+
+- name: Install mysql2 gem with rbenv
+  ansible.builtin.shell: |
+    export HOME=/home/ec2-user
+    export PATH="$HOME/.rbenv/bin:$HOME/.rbenv/shims:$PATH"
+    eval "$(rbenv init - bash)"
+    gem install mysql2 -- --with-mysql-config=/usr/bin/mysql_config
+  args:
+    executable: /bin/bash
+
+- name: Ensure /var/www/rails-app and subdirectories exist
+  file:
+    path: /var/www/rails-app
+    state: directory
+    recurse: yes
+    owner: ec2-user
+    group: ec2-user
+    mode: '0775'
+
+- name: Upload Rails production credentials
+  copy:
+    src: production.yml.enc
+    dest: /var/www/rails-app/config/credentials/production.yml.enc
+    owner: ec2-user
+    group: ec2-user
+    mode: '0640'
+
+- name: Upload Rails production key
+  copy:
+    src: production.key
+    dest: /var/www/rails-app/config/credentials/production.key
+    owner: ec2-user
+    group: ec2-user
+    mode: '0600'
+
+- name: Copy database.yml
+  template:
+    src: database.yml.j2
+    dest: "/var/www/rails-app/config/database.yml"
+    owner: ec2-user
+    group: ec2-user
+    mode: '0775'
+
+- name: Get CloudFormation stack outputs
+  community.aws.cloudformation_info:
+    stack_name: raisetech-stack
+  register: cfn_outputs
+
+- name: Set RDS endpoint
+  set_fact:
+    rds_endpoint: "{{ item.output_value }}"
+  loop: "{{ cfn_outputs.stacks[0].outputs }}"
+  when: item.output_key == 'DBEndpoint'
+
+- name: Get RDS password from Secrets Manager
+  community.aws.aws_secret:
+    name: my-db-secret
+    region: ap-northeast-1
+  register: secret_result
+
+- name: Create the database, run database migrations, and precompile assets
+  shell: |
+    export HOME=/home/ec2-user
+    export PATH="$HOME/.nvm/versions/node/v17.9.1/bin:$HOME/.rbenv/bin:$HOME/.rbenv/shims:$PATH"
+    export RAILS_ENV=production
+    eval "$(rbenv init - bash)"
+    bundle exec rails db:create
+    bundle exec rails db:migrate
+    bundle exec rails assets:precompile
+  args:
+    chdir: /var/www/rails-app
+
+

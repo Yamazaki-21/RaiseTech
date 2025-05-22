@@ -1,0 +1,102 @@
+---
+- name: Install dependencies for Ruby, Node, Yarn, MySQL client
+  ansible.builtin.yum:
+    name:
+      - gcc
+      - gcc-c++
+      - make
+      - libyaml-devel
+      - libffi-devel
+      - readline-devel
+      - zlib-devel
+      - openssl-devel
+      - git
+      - curl
+      - mariadb-devel
+    state: present
+
+- name: Install NVM
+  shell: curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
+  args:
+    executable: /bin/bash
+  environment:
+    HOME: "/home/ec2-user"
+  become: false
+  changed_when: false
+
+- name: Load NVM and install Node.js 17.9.1
+  shell: |
+    export NVM_DIR="$HOME/.nvm"
+    [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+    nvm install 17.9.1
+    nvm alias default 17.9.1
+  args:
+    executable: /bin/bash
+  environment:
+    HOME: "/home/ec2-user"
+  become: false
+
+- name: Install Yarn via npm
+  shell: |
+    export NVM_DIR="$HOME/.nvm"
+    [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+    npm install -g yarn@1.22.19
+  args:
+    executable: /bin/bash
+  environment:
+    HOME: "/home/ec2-user"
+  become: false
+
+- name: Clone rbenv
+  git:
+    repo: 'https://github.com/rbenv/rbenv.git'
+    dest: ~/.rbenv
+    update: no
+  become: false
+
+- name: Clone ruby-build plugin
+  git:
+    repo: 'https://github.com/rbenv/ruby-build.git'
+    dest: ~/.rbenv/plugins/ruby-build
+    update: no
+  become: false
+
+- name: Set up rbenv environment
+  shell: |
+    echo 'export PATH="$HOME/.rbenv/bin:$HOME/.rbenv/shims:$PATH"' >> ~/.bashrc
+    echo 'eval "$(rbenv init - bash)"' >> ~/.bashrc
+  args:
+    executable: /bin/bash
+  become: false
+
+- name: Check if Ruby 3.2.3 is already installed
+  stat:
+    path: "/home/ec2-user/.rbenv/versions/3.2.3"
+  register: ruby_dir
+  become: false
+
+- name: Install Ruby 3.2.3 via rbenv
+  shell: |
+    export PATH="$HOME/.rbenv/bin:$HOME/.rbenv/shims:$PATH"
+    eval "$(rbenv init - bash)"
+    rbenv install 3.2.3
+    rbenv global 3.2.3
+  args:
+    executable: /bin/bash
+  when: not ruby_dir.stat.exists
+  become: false
+
+- name: Install Bundler 2.3.14
+  shell: |
+    export PATH="$HOME/.rbenv/bin:$HOME/.rbenv/shims:$PATH"
+    eval "$(rbenv init -)"
+    gem install bundler -v 2.3.14
+  args:
+    executable: /bin/bash
+  become: false  
+
+- name: Install Rails 7.1.3.2
+  ansible.builtin.shell: |
+    gem install rails -v 7.1.3.2
+  become: false
+
