@@ -70,10 +70,11 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install Ansible
+          name: Install Ansible (>=2.13) and boto libs
           command: |
-            sudo apt update
-            sudo apt install -y ansible python3-boto3
+            sudo apt-get update
+            sudo apt-get install -y python3-pip
+            pip install "ansible>=2.13,<3.0" boto boto3 botocore
       - run:
           name: Install Ansible community.aws collection
           command: |
@@ -85,6 +86,7 @@ jobs:
           command: |
             export EC2_PUBLIC_IP=$(cat tmp/ec2_public_ip.txt)
             echo "export TARGET_HOST=$EC2_PUBLIC_IP" >> $BASH_ENV
+            source $BASH_ENV
       - run:
           name: Generate the Inventory File
           command: |
