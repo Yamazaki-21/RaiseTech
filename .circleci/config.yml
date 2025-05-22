@@ -50,11 +50,16 @@ jobs:
       - run:
           name: Get EC2 Instance Public IP
           command: |
+            mkdir -p tmp
             export EC2_PUBLIC_IP=$(aws cloudformation describe-stacks \
               --stack-name raisetech-stack \
               --query "Stacks[0].Outputs[?OutputKey=='EC2InstancePublicIP'].OutputValue" \
               --output text)
-            echo "EC2 Public IP: $EC2_PUBLIC_IP"
+            echo "$EC2_PUBLIC_IP" > tmp/ec2_public_ip.txt
+      - persist_to_workspace:
+          root: tmp
+          paths:
+            - ec2_public_ip.txt
 
   deploy:
     docker:
@@ -73,13 +78,13 @@ jobs:
           name: Install Ansible community.aws collection
           command: |
             ansible-galaxy collection install community.aws
+      - attach_workspace:
+          at: tmp
       - run:
-          name: Add host to known_hosts
+          name: Load EC2 Public IP from workspace
           command: |
-            echo "TARGET_HOST=${EC2_PUBLIC_IP}" >> $BASH_ENV
-            source $BASH_ENV
-            mkdir -p ~/.ssh
-            ssh-keyscan -H ${TARGET_HOST} >> ~/.ssh/known_hosts
+            export EC2_PUBLIC_IP=$(cat tmp/ec2_public_ip.txt)
+            echo "export TARGET_HOST=$EC2_PUBLIC_IP" >> $BASH_ENV
       - run:
           name: Generate the Inventory File
           command: |
