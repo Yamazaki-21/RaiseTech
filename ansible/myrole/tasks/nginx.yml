@@ -1,9 +1,10 @@
 ---
-- name: Install amazon-linux-extras (for nginx)
-  command: amazon-linux-extras enable nginx1
-
-- name: Install nginx
-  command: sudo yum install nginx
+- name: Update yum and install nginx
+  ansible.builtin.shell: |
+    amazon-linux-extras enable nginx1
+    yum update -y
+    yum install -y nginx
+  become: true
 
 - name: Ensure rails-app-group exists
   group:
