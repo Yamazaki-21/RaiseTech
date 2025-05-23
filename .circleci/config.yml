@@ -100,27 +100,28 @@ jobs:
             echo "${TARGET_HOST} ansible_user=ec2-user ansible_ssh_private_key_file=${SSH_KEY_PATH}" ansible_python_interpreter=/usr/bin/python3.8>> ansible/hosts
             cat ansible/hosts
       - run:
-          name: Deploy CloudFormation Stack
+          name: Save IP and Security Group ID to env
           command: |
-            MY_IP=$(curl -s https://checkip.amazonaws.com)
-            MY_IP2=$(curl -s ifconfig.me)
-            echo "MY_IP: ${MY_IP}"
-            echo "MY_IP2: ${MY_IP2}"
-            aws cloudformation deploy \
-              --template-file cloudformation/main-template.yml \
+            echo 'export MY_IP=$(curl -s https://checkip.amazonaws.com)' >> $BASH_ENV
+            echo 'export MY_CIDR=${MY_IP}/32' >> $BASH_ENV
+            echo 'export SG_ID=$(aws cloudformation describe-stacks \
               --stack-name raisetech-stack \
-              --capabilities CAPABILITY_NAMED_IAM \
-              --parameter-overrides DBUsername=Admin MyIpAdress=${MY_IP2}/32
+              --query "Stacks[0].Outputs[?OutputKey==\`SecurityGroupId\`].OutputValue" \
+              --output text)' >> $BASH_ENV
       - run:
-          name: Wait for CloudFormation Stack Completion
+          name: Allow SSH access from CircleCI
           command: |
-            aws cloudformation wait stack-create-complete --stack-name raisetech-stack
-
+            source $BASH_ENV
+            echo "Adding SSH rule for ${MY_CIDR} to ${SG_ID}"
+            aws ec2 authorize-security-group-ingress \
+              --group-id "${SG_ID}" \
+              --protocol tcp \
+              --port 22 \
+              --cidr "${MY_CIDR}"
       - run:
           name: Add host to known_hosts 
           command: |
             echo "TARGET_HOST: ${TARGET_HOST}"
-            nc -zv ${TARGET_HOST} 22 || echo "Port 22 closed or host unreachable"
             mkdir -p ~/.ssh
             ssh-keyscan -H ${TARGET_HOST} >> ~/.ssh/known_hosts || echo "ssh-keyscan failed"
             cat ~/.ssh/known_hosts || echo "cat failed"
@@ -128,6 +129,16 @@ jobs:
           name: Run Ansible Playbook
           command: |
             ansible-playbook -i ansible/hosts ansible/playbook.yml
+      - run:
+          name: Revoke SSH access
+          command: |
+            source $BASH_ENV
+            echo "Removing SSH rule for ${MY_CIDR} from ${SG_ID}"
+            aws ec2 revoke-security-group-ingress \
+              --group-id "${SG_ID}" \
+              --protocol tcp \
+              --port 22 \
+              --cidr "${MY_CIDR}"
 
   test:
     docker:

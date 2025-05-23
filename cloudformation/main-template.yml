@@ -317,4 +317,8 @@ Outputs:
   EC2InstancePublicIP:
     Description: "Public IP address of the EC2 instance"
     Value: !GetAtt EC2Instance.PublicIp
-
+  SecurityGroupId:
+    Description: "SecurityGroup ID"
+    Value: !Ref EC2SecurityGroup
+    Export:
+      Name: EC2SecurityGroupId
