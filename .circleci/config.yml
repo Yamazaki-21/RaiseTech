@@ -113,8 +113,7 @@ jobs:
               --group-id "${SG_ID}" \
               --protocol tcp \
               --port 22 \
-              --cidr "${MY_CIDR}"
-              || echo "SSH rule already exists or failed temporarily, continuing..."
+              --cidr "${MY_CIDR}" || echo "SSH rule already exists or failed, skipping"
       - run:
           name: Add host to known_hosts 
           command: |
