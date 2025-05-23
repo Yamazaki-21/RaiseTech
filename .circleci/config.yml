@@ -182,7 +182,7 @@ jobs:
               --protocol tcp \
               --port 22 \
               --cidr "${MY_CIDR}" || echo "SSH rule already exists or failed, skipping" 
-     - run:
+      - run:
           name: Run ServerSpec Tests
           command: |
             cd serverspec
