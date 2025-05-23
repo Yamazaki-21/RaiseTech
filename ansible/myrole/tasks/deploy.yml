@@ -67,7 +67,7 @@
   when: item.output_key == 'DBEndpoint'
 
 - name: Get RDS password from Secrets Manager
-  community.aws.aws_secret:
+  mazon.aws.aws_secret_info:
     name: db-secret
     region: ap-northeast-1
   register: secret_result
