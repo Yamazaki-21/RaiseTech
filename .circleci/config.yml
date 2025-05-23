@@ -40,7 +40,7 @@ jobs:
               --template-file cloudformation/main-template.yml \
               --stack-name raisetech-stack \
               --capabilities CAPABILITY_NAMED_IAM \
-              --parameter-overrides DBUsername=Admin MyIpAdress=153.187.12.9/32
+              --parameter-overrides DBUsername=Admin MyIpAdress=133.32.183.11/32
       - run:
           name: Wait for CloudFormation Stack Completion
           command: |
