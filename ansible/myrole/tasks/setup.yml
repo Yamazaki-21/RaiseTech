@@ -7,9 +7,8 @@
 - debug:
     var: os_release.stdout
 
-- name: Check python3.8 version
-  ansible.builtin.command:
-    cmd: python3.8 --version
+- name: Check python3.8 version on remote
+  command: /usr/local/bin/python3.8 --version
   register: python_version
   ignore_errors: yes
 
@@ -17,7 +16,7 @@
     var: python_version.stdout
 
 - name: Install dependencies for Ruby, Node, Yarn, MySQL client
-  ansible.builtin.package:
+  ansible.builtin.yum:
     name:
       - gcc
       - gcc-c++
