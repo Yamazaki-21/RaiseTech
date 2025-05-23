@@ -214,14 +214,19 @@ Resources:
               - s3:PutObject
               - s3:ListBucket
             Resource: 
-              - arn:aws:s3:::raiseitech-test-bucket/*
-              - arn:aws:s3:::raiseitech-test-bucket
-
+              - arn:aws:s3:::raisetech-test-bucket/*
+              - arn:aws:s3:::raisetech-test-bucket
           - Effect: Allow
             Action:
               - cloudformation:DescribeStacks
             Resource:
               - !Sub arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/${AWS::StackName}/*
+          - Effect: Allow
+            Action:
+              - secretsmanager:GetSecretValue
+              - secretsmanager:DescribeSecret
+            Resource: 
+              - !Sub arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:db-secret-*
 
   # EC2インスタンスの作成  
   EC2Instance:  
