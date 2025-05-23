@@ -58,9 +58,9 @@
 
 - name: Set RDS endpoint
   set_fact:
-    rds_endpoint: "{{ item.output_value }}"
-  loop: "{{ cfn_outputs.stacks[0].outputs }}"
-  when: item.output_key == 'DBEndpoint'
+    rds_endpoint: "{{ item.OutputValue }}"
+  loop: "{{ cfn_outputs.stacks[0].Outputs }}"
+  when: item.OutputKey == 'DBEndpoint'
 
 - name: Get RDS password from Secrets Manager
   community.aws.aws_secret:
