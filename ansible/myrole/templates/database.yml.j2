@@ -3,8 +3,8 @@ default: &default
   encoding: utf8mb4
   pool: 5
   host: "{{ rds_endpoint }}"
-  username: "{{ secret_result.value.username }}"
-  password: "{{ secret_result.value.password }}"
+  username: "{{ secret_result.username }}"
+  password: "{{ secret_result.password }}"
   port: 3306
 
 production:
