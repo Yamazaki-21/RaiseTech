@@ -66,11 +66,19 @@
   loop: "{{ cfn_outputs.cloudformation['raisetech-stack'].stack_description.outputs }}"
   when: item.output_key == 'DBEndpoint'
 
-- name: Get RDS password from Secrets Manager
-  amazon.aws.aws_secret_info:
-    name: db-secret
-    region: ap-northeast-1
-  register: secret_result
+- name: Get RDS secret via AWS CLI
+  ansible.builtin.command: >
+    aws secretsmanager get-secret-value
+      --region ap-northeast-1
+      --secret-id db-secret
+      --query SecretString
+      --output text
+  register: secret_json
+  changed_when: false
+
+- name: Parse secret JSON
+  ansible.builtin.set_fact:
+    secret_result: "{{ secret_json.stdout | from_json }}"
 
 - name: Upload Rails production credentials
   copy:
