@@ -2,10 +2,6 @@
 - name: Install amazon-linux-extras (for nginx)
   command: amazon-linux-extras enable nginx1
 
-- name: Update yum cache
-  yum:
-    update_cache: yes
-
 - name: Install nginx
   yum:
     name: nginx 
