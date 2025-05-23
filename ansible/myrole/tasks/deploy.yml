@@ -50,6 +50,23 @@
     group: ec2-user
     mode: '0775'
 
+- name: Get CloudFormation stack outputs
+  amazon.aws.cloudformation_info:
+    stack_name: raisetech-stack
+  register: cfn_outputs
+
+- name: Set RDS endpoint
+  set_fact:
+    rds_endpoint: "{{ item.output_value }}"
+  loop: "{{ cfn_outputs.stacks[0].outputs }}"
+  when: item.output_key == 'DBEndpoint'
+
+- name: Get RDS password from Secrets Manager
+  community.aws.aws_secret:
+    name: db-secret
+    region: ap-northeast-1
+  register: secret_result
+
 - name: Upload Rails production credentials
   copy:
     src: production.yml.enc
@@ -73,23 +90,6 @@
     owner: ec2-user
     group: ec2-user
     mode: '0775'
-
-- name: Get CloudFormation stack outputs
-  amazon.aws.cloudformation_info:
-    stack_name: raisetech-stack
-  register: cfn_outputs
-
-- name: Set RDS endpoint
-  set_fact:
-    rds_endpoint: "{{ item.output_value }}"
-  loop: "{{ cfn_outputs.stacks[0].outputs }}"
-  when: item.output_key == 'DBEndpoint'
-
-- name: Get RDS password from Secrets Manager
-  community.aws.aws_secret:
-    name: db-secret
-    region: ap-northeast-1
-  register: secret_result
 
 - name: Create the database, run database migrations, and precompile assets
   shell: |
