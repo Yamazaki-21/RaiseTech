@@ -1,6 +1,6 @@
 ---
 - name: Install dependencies for Ruby, Node, Yarn, MySQL client
-  ansible.builtin.yum:
+  ansible.builtin.package:
     name:
       - gcc
       - gcc-c++
