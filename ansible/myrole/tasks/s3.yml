@@ -7,32 +7,9 @@
     group: ec2-user
     mode: '0775'
 
-- name: Install dependencies for vips
-  yum:
-    name:
-      - glib2-devel
-      - libxml2-devel
-      - libjpeg-turbo-devel
-      - libpng-devel
-      - libtiff-devel
-      - fftw-devel
-      - libexif-devel
-      - libgsf-devel
-      - giflib-devel
-      - libwebp-devel
-      - librsvg2-devel
-#      - libimagequant-devel
-#      - openslide-devel
-      - gobject-introspection-devel
-      - cairo-devel
-      - orc-devel
-      - poppler-glib-devel
-      - gdk-pixbuf2-devel
-      - make
-      - gcc
-      - gcc-c++
-      - tar
-    state: present
+- name: Install dependencies for vips via shell
+  ansible.builtin.shell: |
+    sudo yum install -y glib2-devel libxml2-devel libjpeg-turbo-devel libpng-devel libtiff-devel fftw-devel libexif-devel libgsf-devel giflib-devel libwebp-devel librsvg2-devel gobject-introspection-devel cairo-devel orc-devel poppler-glib-devel gdk-pixbuf2-devel make gcc gcc-c++ tar
 
 - name: Install meson and ninja using pip3
   pip:
@@ -82,5 +59,4 @@
   lineinfile:
     path: /etc/profile.d/vips.sh
     line: 'export PKG_CONFIG_PATH="/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH"'
-
 

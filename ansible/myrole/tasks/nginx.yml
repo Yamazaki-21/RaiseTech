@@ -3,10 +3,7 @@
   command: amazon-linux-extras enable nginx1
 
 - name: Install nginx
-  yum:
-    name: nginx 
-    state: present
-  become: yes
+  command: sudo yum install nginx
 
 - name: Ensure rails-app-group exists
   group:
