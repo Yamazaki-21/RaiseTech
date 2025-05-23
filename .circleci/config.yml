@@ -36,15 +36,11 @@ jobs:
       - run:
           name: Deploy CloudFormation Stack
           command: |
-            MY_IP=$(curl -s https://checkip.amazonaws.com)
-            MY_IP2=$(curl -s ifconfig.me)
-            echo "MY_IP: ${MY_IP}"
-            echo "MY_IP2: ${MY_IP2}"
             aws cloudformation deploy \
               --template-file cloudformation/main-template.yml \
               --stack-name raisetech-stack \
               --capabilities CAPABILITY_NAMED_IAM \
-              --parameter-overrides DBUsername=Admin MyIpAdress=${MY_IP2}/32
+              --parameter-overrides DBUsername=Admin MyIpAdress=153.187.12.9/32
       - run:
           name: Wait for CloudFormation Stack Completion
           command: |
