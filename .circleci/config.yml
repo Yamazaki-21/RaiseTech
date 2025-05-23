@@ -204,7 +204,7 @@ workflows:
   raisetech:
     jobs:
        - cloudformation
-       - test
+       - test:
           requires:
             - cloudformation
 
