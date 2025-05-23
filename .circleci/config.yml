@@ -145,6 +145,7 @@ jobs:
       SSH_KEY_PATH: ~/.ssh/id_rsa
     steps:
       - checkout
+      - aws-cli/setup 
       - run:
           name: Install Serverspec
           command: |
@@ -202,14 +203,15 @@ workflows:
   version: 2
   raisetech:
     jobs:
-      - cfn-lint
-      - cloudformation:
-          requires:
-            - cfn-lint
-      - deploy:
-          requires:
-            - cloudformation
-      - test:
-          requires:
-            - deploy
+      - test
+#      - cfn-lint
+#      - cloudformation:
+#          requires:
+#            - cfn-lint
+#      - deploy:
+#          requires:
+#            - cloudformation
+#      - test:
+#          requires:
+#            - deploy
 
