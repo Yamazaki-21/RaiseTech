@@ -56,10 +56,14 @@
     region: ap-northeast-1
   register: cfn_outputs
 
+- name: Debug CloudFormation output structure
+  debug:
+    var: cfn_outputs
+
 - name: Set RDS endpoint
   set_fact:
     rds_endpoint: "{{ item.OutputValue }}"
-  loop: "{{ cfn_outputs.stacks[0].Outputs }}"
+  loop: "{{ cfn_outputs.stack.Outputs }}"
   when: item.OutputKey == 'DBEndpoint'
 
 - name: Get RDS password from Secrets Manager
