@@ -155,11 +155,48 @@ jobs:
             echo "TARGET_HOST=${EC2_PUBLIC_IP}" >> $BASH_ENV
             source $BASH_ENV
             gem install serverspec rake
+      - attach_workspace:
+          at: tmp
       - run:
+          name: Load EC2 Public IP from workspace
+          command: |
+            export EC2_PUBLIC_IP=$(cat tmp/ec2_public_ip.txt)
+            echo "export TARGET_HOST=$EC2_PUBLIC_IP" >> $BASH_ENV
+            source $BASH_ENV
+      - run:
+          name: Save IP and Security Group ID to env
+          command: |
+            echo 'export MY_IP=$(curl -s https://checkip.amazonaws.com)' >> $BASH_ENV
+            echo 'export MY_CIDR=${MY_IP}/32' >> $BASH_ENV
+            echo 'export SG_ID=$(aws cloudformation describe-stacks \
+              --stack-name raisetech-stack \
+              --query "Stacks[0].Outputs[?OutputKey==\`SecurityGroupId\`].OutputValue" \
+              --output text)' >> $BASH_ENV
+      - run:
+          name: Allow SSH access from CircleCI
+          command: |
+            source $BASH_ENV
+            echo "Adding SSH rule for ${MY_CIDR} to ${SG_ID}"
+            aws ec2 authorize-security-group-ingress \
+              --group-id "${SG_ID}" \
+              --protocol tcp \
+              --port 22 \
+              --cidr "${MY_CIDR}" || echo "SSH rule already exists or failed, skipping" 
+     - run:
           name: Run ServerSpec Tests
           command: |
             cd serverspec
             rake spec
+      - run:
+          name: Revoke SSH access
+          command: |
+            source $BASH_ENV
+            echo "Removing SSH rule for ${MY_CIDR} from ${SG_ID}"
+            aws ec2 revoke-security-group-ingress \
+              --group-id "${SG_ID}" \
+              --protocol tcp \
+              --port 22 \
+              --cidr "${MY_CIDR}"
 
 workflows:
   version: 2
