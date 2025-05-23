@@ -15,22 +15,9 @@
 - debug:
     var: python_version.stdout
 
-- name: Install dependencies for Ruby, Node, Yarn, MySQL client
-  ansible.builtin.yum:
-    name:
-      - gcc
-      - gcc-c++
-      - make
-      - libyaml-devel
-      - libffi-devel
-      - readline-devel
-      - zlib-devel
-      - openssl-devel
-      - git
-      - curl
-      - mariadb-devel
-    state: present
-    use_backend: yum
+- name: Install dependencies manually with yum
+  ansible.builtin.shell: |
+    sudo yum install -y gcc gcc-c++ make libyaml-devel libffi-devel readline-devel zlib-devel openssl-devel git curl mariadb-devel
 
 - name: Install NVM
   shell: curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
