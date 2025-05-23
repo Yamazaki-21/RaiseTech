@@ -217,6 +217,12 @@ Resources:
               - arn:aws:s3:::raiseitech-test-bucket/*
               - arn:aws:s3:::raiseitech-test-bucket
 
+          - Effect: Allow
+            Action:
+              - cloudformation:DescribeStacks
+            Resource:
+              - !Sub arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/${AWS::StackName}/*
+
   # EC2インスタンスの作成  
   EC2Instance:  
     Type: AWS::EC2::Instance  
