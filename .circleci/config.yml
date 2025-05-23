@@ -114,6 +114,7 @@ jobs:
               --protocol tcp \
               --port 22 \
               --cidr "${MY_CIDR}"
+              || echo "SSH rule already exists or failed temporarily, continuing..."
       - run:
           name: Add host to known_hosts 
           command: |
