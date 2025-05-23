@@ -53,6 +53,7 @@
 - name: Get CloudFormation stack outputs
   amazon.aws.cloudformation_info:
     stack_name: raisetech-stack
+    region: ap-northeast-1
   register: cfn_outputs
 
 - name: Set RDS endpoint
