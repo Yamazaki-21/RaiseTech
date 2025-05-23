@@ -1,4 +1,21 @@
 ---
+- name: Show OS version
+  ansible.builtin.command:
+    cmd: cat /etc/os-release
+  register: os_release
+
+- debug:
+    var: os_release.stdout
+
+- name: Check python3.8 version
+  ansible.builtin.command:
+    cmd: python3.8 --version
+  register: python_version
+  ignore_errors: yes
+
+- debug:
+    var: python_version.stdout
+
 - name: Install dependencies for Ruby, Node, Yarn, MySQL client
   ansible.builtin.package:
     name:
