@@ -19,6 +19,13 @@
   ansible.builtin.shell: |
     sudo yum install -y gcc gcc-c++ make libyaml-devel libffi-devel readline-devel zlib-devel openssl-devel git curl mariadb-devel
 
+- name: Install boto3 and botocore for Python 3.8
+  ansible.builtin.pip:
+    name:
+      - boto3
+      - botocore
+    executable: /usr/local/bin/pip3.8
+
 - name: Install NVM
   shell: curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
   args:
