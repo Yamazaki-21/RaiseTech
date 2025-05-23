@@ -328,3 +328,9 @@ Outputs:
     Value: !Ref EC2SecurityGroup
     Export:
       Name: EC2SecurityGroupId
+  DBEndpoint:
+    Description: "RDS endpoint"
+    Value: !GetAtt RDSInstance.Endpoint.Address
+    Export:
+      Name: DBEndpoint
+
