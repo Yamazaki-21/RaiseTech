@@ -79,8 +79,8 @@ end
 # ----------------------------
 # ALB 経由のヘルスチェック
 # ----------------------------
-describe command("curl -s -o /dev/null -w '%{http_code}' http://#{ENV['ALB_DNS']}/healthcheck") do
-  its(:stdout) { should eq '200' }
+describe command('curl -4 -s -o /dev/null -w "%{http_code}" http://raisetech-alb-687178373.ap-northeast-1.elb.amazonaws.com/healthcheck') do
   its(:exit_status) { should eq 0 }
+  its(:stdout) { should eq '200' }
 end
 
