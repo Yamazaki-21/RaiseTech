@@ -5,27 +5,21 @@ orbs:
   python: circleci/python@2.0.3
   aws-cli: circleci/aws-cli@4.1.1
 
-# ジョブ定義
+
 jobs:
 
-  # CloudFormationのLintチェックを実行
-  cfn-lint:
-    executor: python/default
-    steps:
-      - checkout
-      - run: pip install cfn-lint
-      - run:
-          name: "CloudFormationテンプレートのLint実行"
-          command: |
-            cfn-lint -i W3002 -t cloudformation/*.yml
-
   # CloudFormationテンプレートを使用してスタック作成
-  genarate cloudformation template:
+  genarate_cloudformation_template:
     docker:
       - image: cimg/python:3.11
     steps:
       - checkout
       - aws-cli/setup
+      - run:
+          name: "cfn-Lintインストール&実行"
+          command: |
+            pip install cfn-lint
+            cfn-lint -i W3002 -t cloudformation/*.yml
       - run:
           name: "SecretsManagerスタック作成"
           command: |
@@ -65,7 +59,7 @@ jobs:
           paths:
             - ec2_public_ip.txt
 
-  deploy rails app:
+  deploy_rails_app:
     docker:
       - image: cimg/python:3.11
     environment:
@@ -141,7 +135,7 @@ jobs:
               --cidr "${MY_CIDR}"
 
   # サーバーのテスト
-  server test:
+  run_server_test:
     docker:
       - image: cimg/python:3.11
     environment:
@@ -230,18 +224,17 @@ workflows:
   version: 2
   raisetech:
     jobs:
-#      - cloudformation
-#      - test:
+#      - genarate cloudformation template
+#      - run_server_test:
 #          requires:
-#            - cloudformation
-      - cfn-lint
-      - cloudformation:
+#            - genarate_cloudformation_template
+      - genarate_cloudformation_template
          requires:
-            - cfn-lint
-      - deploy:
+            - genarate cloudformation template
+      - deploy_rails_app:
           requires:
-            - cloudformation
-      - test:         
+            - genarate cloudformation template
+      - run_server_test:         
           requires:
-            - deploy
+            - deploy_rails_app
 
