@@ -231,7 +231,7 @@ workflows:
       - genarate_cloudformation_template
       - deploy_rails_app:
           requires:
-            - genarate cloudformation template
+            - genarate_cloudformation_template
       - run_server_test:         
           requires:
             - deploy_rails_app
