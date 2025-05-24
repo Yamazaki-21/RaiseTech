@@ -17,7 +17,7 @@
 
 - name: Install dependencies manually with yum
   ansible.builtin.shell: |
-    sudo yum install -y gcc gcc-c++ make libyaml-devel libffi-devel readline-devel zlib-devel openssl-devel git curl mariadb-devel
+    sudo yum install -y gcc gcc-c++ make libyaml-devel libffi-devel readline-devel zlib-devel openssl-devel git curl mariadb-devel mariadb
 
 - name: Install boto3 and botocore for Python 3.8
   ansible.builtin.pip:
