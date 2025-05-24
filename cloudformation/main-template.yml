@@ -327,7 +327,7 @@ Resources:
 Outputs:
   AlbDnsName:
     Description: "Public IP address of the EC2 instance"
-    Value: !GetAtt ApplicationLoadBalancer.DnsName
+    Value: !GetAtt ApplicationLoadBalancer.DNSName
     Export:
       Name: ALBDnsName
   EC2InstancePublicIP:
