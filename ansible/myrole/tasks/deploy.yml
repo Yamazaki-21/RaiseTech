@@ -1,17 +1,17 @@
 ---
-- name: Check if the .git directory exists
+- name: .gitディレクトリが存在するか確認
   stat:
     path: /var/www/rails-app/.git
   register: git_dir
 
-- name: Clone the Rails app repository if .git does not exist
+- name: .gitがなければRailsアプリのリポジトリをクローン
   git:
     repo: 'https://github.com/yuta-ushijima/raisetech-live8-sample-app.git'
     dest: /var/www/rails-app
     version: main
   when: not git_dir.stat.exists
 
-- name: bundle install を実行（rbenvパスを明示）
+- name: bundle installを実行（rbenvのパスを明示）
   shell: |
     export HOME=/home/ec2-user
     export PATH="$HOME/.rbenv/bin:$HOME/.rbenv/shims:$PATH"
@@ -22,7 +22,7 @@
     chdir: /var/www/rails-app
     executable: /bin/bash
 
-- name: yarn install を実行
+- name: yarn installを実行
   shell: |
     export HOME=/home/ec2-user
     export PATH="$HOME/.nvm/versions/node/v17.9.1/bin:$HOME/.rbenv/bin:$HOME/.rbenv/shims:$PATH"
@@ -32,7 +32,7 @@
     chdir: /var/www/rails-app
     executable: /bin/bash
 
-- name: Install mysql2 gem with rbenv
+- name: rbenvを使ってmysql2 gemをインストール
   ansible.builtin.shell: |
     export HOME=/home/ec2-user
     export PATH="$HOME/.rbenv/bin:$HOME/.rbenv/shims:$PATH"
@@ -41,7 +41,7 @@
   args:
     executable: /bin/bash
 
-- name: Ensure /var/www/rails-app and subdirectories exist
+- name: /var/www/rails-appとサブディレクトリを作成し権限を設定
   file:
     path: /var/www/rails-app
     state: directory
@@ -50,23 +50,23 @@
     group: ec2-user
     mode: '0775'
 
-- name: Get CloudFormation stack outputs
+- name: CloudFormationスタックの出力を取得
   amazon.aws.cloudformation_info:
     stack_name: raisetech-stack
     region: ap-northeast-1
   register: cfn_outputs
 
-- name: Debug CloudFormation output structure
+- name: CloudFormationの出力内容をデバッグ表示
   debug:
     var: cfn_outputs
 
-- name: Set RDS endpoint
+- name: RDSのエンドポイントを設定
   set_fact:
     rds_endpoint: "{{ item.output_value }}"
   loop: "{{ cfn_outputs.cloudformation['raisetech-stack'].stack_description.outputs }}"
   when: item.output_key == 'DBEndpoint'
 
-- name: Get RDS secret via AWS CLI
+- name: AWS CLIでRDSのシークレットを取得
   ansible.builtin.command: >
     aws secretsmanager get-secret-value
       --region ap-northeast-1
@@ -76,11 +76,11 @@
   register: secret_json
   changed_when: false
 
-- name: Parse secret JSON
+- name: シークレットJSONを解析して変数にセット
   ansible.builtin.set_fact:
     secret_result: "{{ secret_json.stdout | from_json }}"
 
-- name: Upload Rails production credentials
+- name: Railsのproduction用credentialsをアップロード
   copy:
     src: production.yml.enc
     dest: /var/www/rails-app/config/credentials/production.yml.enc
@@ -88,7 +88,7 @@
     group: ec2-user
     mode: '0640'
 
-- name: Upload Rails production key
+- name: Railsのproduction用キーをアップロード
   copy:
     src: production.key
     dest: /var/www/rails-app/config/credentials/production.key
@@ -96,7 +96,7 @@
     group: ec2-user
     mode: '0600'
 
-- name: Copy database.yml
+- name: database.ymlを配置
   template:
     src: database.yml.j2
     dest: "/var/www/rails-app/config/database.yml"
@@ -104,7 +104,7 @@
     group: ec2-user
     mode: '0775'
 
-- name: Create the database, run database migrations, and precompile assets
+- name: データベース作成・マイグレーション・アセットプリコンパイルを実行
   shell: |
     export HOME=/home/ec2-user
     export PATH="$HOME/.nvm/versions/node/v17.9.1/bin:$HOME/.rbenv/bin:$HOME/.rbenv/shims:$PATH"
@@ -115,5 +115,4 @@
     bundle exec rails assets:precompile
   args:
     chdir: /var/www/rails-app
-
 

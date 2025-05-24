@@ -1,11 +1,11 @@
 ---
-- name: Copy Puma systemd service file from template
+- name: Pumaのsystemdサービスファイルをテンプレートからコピー
   template:
     src: puma.service.j2
     dest: /etc/systemd/system/puma.service
   become: yes
 
-- name: Copy puma.rb
+- name: puma.rbをコピー
   template:
     src: puma.rb.j2
     dest: "/var/www/rails-app/config/puma.rb"
@@ -13,7 +13,7 @@
     group: ec2-user
     mode: '0775'
 
-- name: Create directories for Puma (sockets and pids)
+- name: Puma用のディレクトリ（socketsとpids）を作成
   file:
     path: "/var/www/rails-app/tmp/{{ item }}"
     state: directory
@@ -24,12 +24,12 @@
     - sockets
     - pids
 
-- name: Reload systemd to pick up the new Puma service file
+- name: systemdをリロードしてPumaサービスの変更を反映
   systemd:
     daemon_reload: yes
   become: yes
 
-- name: Start and enable Puma service
+- name: Pumaサービスを起動・有効化
   systemd:
     name: puma
     state: started

@@ -1,29 +1,29 @@
 ---
-- name: Update yum and install nginx
+- name: Amazon Linux Extrasでnginx1リポジトリを有効化し、yumを更新してnginxをインストール
   ansible.builtin.shell: |
     amazon-linux-extras enable nginx1
     yum update -y
     yum install -y nginx
   become: true
 
-- name: Ensure rails-app-group exists
+- name: rails-app-groupグループが存在することを保証
   group:
     name: rails-app-group
     state: present
 
-- name: Add ec2-user to rails-app-group
+- name: ec2-userをrails-app-groupに追加
   user:
     name: ec2-user
     groups: rails-app-group
     append: yes
 
-- name: Add nginx to rails-app-group
+- name: nginxユーザーをrails-app-groupに追加
   user:
     name: nginx
     groups: rails-app-group
     append: yes
 
-- name: Ensure /var/www/rails-app and subdirectories exist
+- name: /var/www/rails-appとサブディレクトリが存在することを保証し権限を設定
   file:
     path: /var/www/rails-app
     state: directory
@@ -32,22 +32,21 @@
     group: rails-app-group
     mode: '0775'
 
-- name: Create Nginx config
+- name: Nginxの設定ファイルを作成
   template:
     src: nginx.conf.j2
     dest: /etc/nginx/nginx.conf
   become: yes
 
-- name: Reload systemd to pick up the new Nginx service file
+- name: systemdをリロードしてNginxサービスの変更を反映
   systemd:
     daemon_reload: yes
   become: yes
 
-- name: Start and enable Nginx service
+- name: Nginxサービスを起動・有効化
   systemd:
     name: nginx
     state: started
     enabled: yes
   become: yes
-
 
