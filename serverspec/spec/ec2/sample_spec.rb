@@ -2,20 +2,23 @@ require 'spec_helper'
 # ----------------------------
 # Ruby / Bundler / Rails / Node.js / Yarn
 # ----------------------------
-bash_prefix = "source /home/ec2-user/.bashrc && "
-describe command("#{bash_prefix} ruby -v") do
+describe command('bash -l -c "ruby -v"') do
   its(:stdout) { should match /ruby 3\.2\.3/ }
 end
-describe command("#{bash_prefix} bundle -v") do
+
+describe command('bash -l -c "bundle -v"') do
   its(:stdout) { should match /Bundler version 2\.3\.14/ }
 end
-describe command("#{bash_prefix} rails -v") do
+
+describe command('bash -l -c "rails -v"') do
   its(:stdout) { should match /Rails 7\.1\.3\.2/ }
 end
-describe command("#{bash_prefix} node -v") do
+
+describe command('bash -l -c "node -v"') do
   its(:stdout) { should match /v17\.9\.1/ }
 end
-describe command("#{bash_prefix} yarn -v") do
+
+describe command('bash -l -c "yarn -v"') do
   its(:stdout) { should match /1\.22\.19/ }
 end
 
