@@ -228,8 +228,8 @@ workflows:
     jobs:
       - cloudformation
       - test:
-        requires:
-          - cloudformation
+          requires:
+            - cloudformation
 #      - cfn-lint
 #      - cloudformation:
 #         requires:
