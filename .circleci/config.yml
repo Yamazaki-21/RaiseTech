@@ -174,7 +174,7 @@ jobs:
             echo "export ALB_DNS=$ALB_DNS" >> $BASH_ENV
             echo "export DB_USERNAME=$DB_USERNAME" >> $BASH_ENV
             echo "export DB_PASSWORD=$DB_PASSWORD" >> $BASH_ENV
-            echo "$DB_USERNAME"
+            echo "$DB_PASSWORD"
             source $BASH_ENV
       - attach_workspace:
           at: tmp
