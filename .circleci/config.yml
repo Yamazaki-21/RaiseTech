@@ -158,6 +158,7 @@ jobs:
       - run:
           name: "Get CloudFormation Outputs & Secrets"
           command: |
+            cat $BASH_ENV
             export RDS_ENDPOINT=$(aws cloudformation describe-stacks \
               --stack-name raisetech-stack \
               --query "Stacks[0].Outputs[?OutputKey=='DBEndpoint'].OutputValue" \
