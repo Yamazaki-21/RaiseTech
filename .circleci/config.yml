@@ -229,8 +229,6 @@ workflows:
 #          requires:
 #            - genarate_cloudformation_template
       - genarate_cloudformation_template
-         requires:
-            - genarate cloudformation template
       - deploy_rails_app:
           requires:
             - genarate cloudformation template
