@@ -7,19 +7,23 @@ describe command('ruby -v') do
   its(:stdout) { should match /ruby 3\.2\.3/ }
 end
 
-describe command('bash -l -c "bundle -v"') do
+describe command('bundle -v') do
+  let(:disable_sudo) { true }
   its(:stdout) { should match /Bundler version 2\.3\.14/ }
 end
 
-describe command('bash -l -c "rails -v"') do
+describe command('rails -v') do
+  let(:disable_sudo) { true }
   its(:stdout) { should match /Rails 7\.1\.3\.2/ }
 end
 
-describe command('bash -l -c "node -v"') do
+describe command('node -v') do
+  let(:disable_sudo) { true }
   its(:stdout) { should match /v17\.9\.1/ }
 end
 
-describe command('bash -l -c "yarn -v"') do
+describe command('yarn -v') do
+  let(:disable_sudo) { true }
   its(:stdout) { should match /1\.22\.19/ }
 end
 
@@ -55,7 +59,7 @@ end
 describe file('/var/www/rails-app/tmp/sockets/puma.sock') do
   it { should be_socket }
   it { should be_owned_by 'ec2-user' }
-end
+  end
 
 # ----------------------------
 # RDS 接続確認
