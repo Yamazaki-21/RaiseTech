@@ -2,7 +2,7 @@ require 'spec_helper'
 # ----------------------------
 # Ruby / Bundler / Rails / Node.js / Yarn
 # ----------------------------
-describe command('bash -l -c "ruby -v"') do
+describe command('sudo -E bash -l -c "ruby -v"') do
   its(:stdout) { should match /ruby 3\.2\.3/ }
 end
 
