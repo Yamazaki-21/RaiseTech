@@ -227,8 +227,9 @@ workflows:
   raisetech:
     jobs:
       - cloudformation
+      - test:
         requires:
-          - test
+          - cloudformation
 #      - cfn-lint
 #      - cloudformation:
 #         requires:
