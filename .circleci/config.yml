@@ -155,6 +155,7 @@ jobs:
             echo 'export PATH="$HOME/.gem/bin:$PATH"' >> $BASH_ENV
             echo "TARGET_HOST=${EC2_PUBLIC_IP}" >> $BASH_ENV
             source $BASH_ENV
+            cat $BASH_ENV
             gem install serverspec rake
       - run:
           name: "Get CloudFormation Outputs & Secrets"
@@ -179,6 +180,7 @@ jobs:
             echo "export DB_USERNAME=$DB_USERNAME" >> $BASH_ENV
             echo "export DB_PASSWORD=$DB_PASSWORD" >> $BASH_ENV
             source $BASH_ENV
+            cat $BASH_ENV
       - attach_workspace:
           at: tmp
       - run:
