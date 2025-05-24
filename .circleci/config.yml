@@ -185,7 +185,7 @@ jobs:
           command: |
             export EC2_PUBLIC_IP=$(cat tmp/ec2_public_ip.txt)
             echo "export TARGET_HOST=$EC2_PUBLIC_IP" >> $BASH_ENV
-            source $BASH_ENV
+            source $BASH_ENV 
       - run:
           name: Save IP and Security Group ID to env
           command: |
@@ -225,14 +225,14 @@ workflows:
   version: 2
   raisetech:
     jobs:
-      - cfn-lint
-      - cloudformation:
-          requires:
-            - cfn-lint
-      - deploy:
-          requires:
-            - cloudformation
-      - test:
-          requires:
-            - deploy
+#      - cfn-lint
+#      - cloudformation:
+#          requires:
+#            - cfn-lint
+#      - deploy:
+#          requires:
+#            - cloudformation
+      - test
+#          requires:
+#            - deploy
 
