@@ -1,40 +1,30 @@
 require 'spec_helper'
-
-# ----------------------------
-# パッケージの確認
-# ----------------------------
-describe package('nginx') do
-  it { should be_installed }
-end
-describe package('nodejs') do
-  it { should be_installed }
-end
-describe package('yarn') do
-  it { should be_installed }
-end
-
 # ----------------------------
 # Ruby / Bundler / Rails / Node.js / Yarn
 # ----------------------------
-describe command('ruby -v') do
+bash_prefix = "source /home/ec2-user/.bashrc && "
+describe command("#{bash_prefix} ruby -v") do
   its(:stdout) { should match /ruby 3\.2\.3/ }
 end
-describe command('bundle -v') do
+describe command("#{bash_prefix} bundle -v") do
   its(:stdout) { should match /Bundler version 2\.3\.14/ }
 end
-describe command('rails -v') do
+describe command("#{bash_prefix} rails -v") do
   its(:stdout) { should match /Rails 7\.1\.3\.2/ }
 end
-describe command('node -v') do
+describe command("#{bash_prefix} node -v") do
   its(:stdout) { should match /v17\.9\.1/ }
 end
-describe command('yarn -v') do
+describe command("#{bash_prefix} yarn -v") do
   its(:stdout) { should match /1\.22\.19/ }
 end
 
 # ----------------------------
 # サービスの確認
 # ----------------------------
+describe package('nginx') do
+  it { should be_installed }
+end
 describe service('nginx') do
   it { should be_enabled }
   it { should be_running }

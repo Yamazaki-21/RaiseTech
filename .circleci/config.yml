@@ -9,7 +9,7 @@ orbs:
 jobs:
 
   # CloudFormationテンプレートを使用してスタック作成
-  genarate_cloudformation_template:
+  Genarate_Cloudformation_Template:
     docker:
       - image: cimg/python:3.11
     steps:
@@ -59,7 +59,7 @@ jobs:
           paths:
             - ec2_public_ip.txt
 
-  deploy_rails_app:
+  Deploy_Rails_App:
     docker:
       - image: cimg/python:3.11
     environment:
@@ -134,8 +134,7 @@ jobs:
               --port 22 \
               --cidr "${MY_CIDR}"
 
-  # サーバーのテスト
-  run_server_test:
+  Run_Server_Test:
     docker:
       - image: cimg/python:3.11
     environment:
@@ -224,15 +223,15 @@ workflows:
   version: 2
   raisetech:
     jobs:
-#      - genarate cloudformation template
-#      - run_server_test:
+      - Genarate_Cloudformation_Template
+      - Run_Server_Test:
+          requires:
+            - enarate_Cloudformation_Template
+#      - Genarate_Cloudformation_Template
+#      - Deploy_Rails_App:
 #          requires:
-#            - genarate_cloudformation_template
-      - genarate_cloudformation_template
-      - deploy_rails_app:
-          requires:
-            - genarate_cloudformation_template
-      - run_server_test:         
-          requires:
-            - deploy_rails_app
-
+#            - Genarate_Cloudformation_Template
+#      - Run_Server_Test:         
+#          requires:
+#            - Deploy_Rails_App
+#

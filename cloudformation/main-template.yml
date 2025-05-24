@@ -320,7 +320,7 @@ Resources:
   S3Bucket:  
     Type: AWS::S3::Bucket
     Properties:  
-      BucketName: raiseitech-test-bucket # バケット名称
+      BucketName: raisetech-test-bucket # バケット名称
     DeletionPolicy: Delete
     UpdateReplacePolicy: Delete
 
