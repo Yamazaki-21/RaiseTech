@@ -7,7 +7,7 @@ describe command('ruby -v') do
   its(:stdout) { should match /ruby 3\.2\.3/ }
 end
 
-describe command('bundle -v') do
+describe command('bundler -v') do
   let(:disable_sudo) { true }
   its(:stdout) { should match /Bundler version 2\.3\.14/ }
 end
@@ -72,7 +72,7 @@ end
 # ----------------------------
 # S3アクセス確認
 # ----------------------------
-describe command("aws s3 ls s3://raiseitech-test-bucket/") do
+describe command("aws s3 ls s3://raisetech-test-bucket/") do
   its(:exit_status) { should eq 0 }
   its(:stdout) { should match /PRE|.*\d{4}-\d{2}-\d{2}/ }
 end
