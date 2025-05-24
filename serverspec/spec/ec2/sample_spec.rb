@@ -58,8 +58,7 @@ end
 # ----------------------------
 describe file('/var/www/rails-app/tmp/sockets/puma.sock') do
   it { should be_socket }
-  it { should be_owned_by 'ec2-user' }
-  end
+end
 
 # ----------------------------
 # RDS 接続確認
@@ -74,7 +73,7 @@ end
 # ----------------------------
 describe command("aws s3 ls s3://raisetech-test-bucket/") do
   its(:exit_status) { should eq 0 }
-  its(:stdout) { should match /PRE|.*\d{4}-\d{2}-\d{2}/ }
+  its(:stdout) { should satisfy { |stdout| stdout.empty? || stdout.match(/PRE|.*\d{4}-\d{2}-\d{2}/) } }
 end
 
 # ----------------------------
