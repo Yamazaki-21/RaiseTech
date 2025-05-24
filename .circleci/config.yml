@@ -178,7 +178,6 @@ jobs:
             echo "export ALB_DNS=$ALB_DNS" >> $BASH_ENV
             echo "export DB_USERNAME=$DB_USERNAME" >> $BASH_ENV
             echo "export DB_PASSWORD=$DB_PASSWORD" >> $BASH_ENV
-            source $BASH_ENV
       - attach_workspace:
           at: tmp
       - run:
@@ -186,7 +185,6 @@ jobs:
           command: |
             export EC2_PUBLIC_IP=$(cat tmp/ec2_public_ip.txt)
             echo "export TARGET_HOST=$EC2_PUBLIC_IP" >> $BASH_ENV
-            source $BASH_ENV 
       - run:
           name: Save IP and Security Group ID to env
           command: |
@@ -196,10 +194,10 @@ jobs:
               --stack-name raisetech-stack \
               --query "Stacks[0].Outputs[?OutputKey==\`SecurityGroupId\`].OutputValue" \
               --output text)' >> $BASH_ENV
-            source $BASH_ENV
       - run:
           name: Allow SSH access from CircleCI
           command: |
+            source $BASH_ENV
             echo "Adding SSH rule for ${MY_CIDR} to ${SG_ID}"
             aws ec2 authorize-security-group-ingress \
               --group-id "${SG_ID}" \
