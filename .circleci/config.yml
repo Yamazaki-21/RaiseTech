@@ -226,7 +226,7 @@ workflows:
       - Genarate_Cloudformation_Template
       - Run_Server_Test:
           requires:
-            - enarate_Cloudformation_Template
+            - Genarate_Cloudformation_Template
 #      - Genarate_Cloudformation_Template
 #      - Deploy_Rails_App:
 #          requires:
