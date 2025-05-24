@@ -325,6 +325,11 @@ Resources:
     UpdateReplacePolicy: Delete
 
 Outputs:
+  AlbDnsName:
+    Description: "Public IP address of the EC2 instance"
+    Value: !GetAtt ApplicationLoadBalancer.DnsName
+    Export:
+      Name: ALBDnsName
   EC2InstancePublicIP:
     Description: "Public IP address of the EC2 instance"
     Value: !GetAtt EC2Instance.PublicIp
