@@ -177,7 +177,7 @@ jobs:
             echo 'export DB_PASSWORD="$DB_PASSWORD"' >> $BASH_ENV
             source $BASH_ENV
             cat $BASH_ENV 
-     - attach_workspace:
+      - attach_workspace:
           at: tmp
       - run:
           name: "ワークスペースからEC2のパブリックIPを読み込む"
