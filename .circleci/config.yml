@@ -174,18 +174,11 @@ jobs:
               --output text)
             export DB_USERNAME=$(echo $secret_json | jq -r '.username')
             export DB_PASSWORD=$(echo $secret_json | jq -r '.password')
-            echo "1"
             echo 'export RDS_ENDPOINT="$RDS_ENDPOINT"' >> $BASH_ENV
-            echo "2"
             echo 'export ALB_DNS="$ALB_DNS"' >> $BASH_ENV
-            echo "3"
             echo 'export DB_USERNAME="$DB_USERNAME"' >> $BASH_ENV
-            echo "4"
             echo 'export DB_PASSWORD="$DB_PASSWORD"' >> $BASH_ENV
-            echo "5"
             source $BASH_ENV
-            echo "6"
-            cat $BASH_ENV
       - attach_workspace:
           at: tmp
       - run:
@@ -234,18 +227,18 @@ workflows:
   version: 2
   raisetech:
     jobs:
-      - cloudformation
-      - test:
-          requires:
-            - cloudformation
-#      - cfn-lint
-#      - cloudformation:
-#         requires:
-#            - cfn-lint
-#      - deploy:
+#      - cloudformation
+#      - test:
 #          requires:
 #            - cloudformation
-#      - test:         
-#          requires:
-#            - deploy
+      - cfn-lint
+      - cloudformation:
+         requires:
+            - cfn-lint
+      - deploy:
+          requires:
+            - cloudformation
+      - test:         
+          requires:
+            - deploy
 
