@@ -78,7 +78,7 @@ end
 
 # vipsの確認
 describe command('vips --version') do
-　its(:exit_status) { should eq 0 }
+  its(:exit_status) { should eq 0 }
   its(:stdout) { should match /^vips-/ }
 end
 
