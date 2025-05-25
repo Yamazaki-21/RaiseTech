@@ -55,7 +55,7 @@ end
 
 
 # RDS 接続確認
-describe command(%Q{#{rbenv_init}; cd /var/www/rails-app && RAILS_ENV=production bundle exec rails runner 'puts ActiveRecord::Base.connection.active?'}) do
+describe command(%Q{/bin/bash -lc 'cd /var/www/rails-app && RAILS_ENV=production bundle exec rails runner "puts ActiveRecord::Base.connection.active?"'}) do
   let(:disable_sudo) { true }
   its(:stdout) { should match /true/ }
   its(:exit_status) { should eq 0 }
