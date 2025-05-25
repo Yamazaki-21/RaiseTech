@@ -117,13 +117,15 @@ jobs:
       - run:
           name: "known_hostsにホストを追加(初回接続確認回避用)" 
           command: |
+            mkdir -p ~/.ssh
+            touch ~/.ssh/known_hosts
+            echo "TARGET_HOST: ${TARGET_HOST}" 
             if ssh-keygen -F ${TARGET_HOST} > /dev/null; then
               echo "${TARGET_HOST} is already in known_hosts, skipping."
             else
-              echo "TARGET_HOST: ${TARGET_HOST}"
-              mkdir -p ~/.ssh
               ssh-keyscan -H ${TARGET_HOST} >> ~/.ssh/known_hosts || echo "ssh-keyscan failed"
             fi
+            cat ~/.ssh/known_hosts
       - run:
           name: "Ansible Playbookを実行"
           command: |
