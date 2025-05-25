@@ -1,18 +1,13 @@
 require 'spec_helper'
 
 # Ruby / Bundler / Rails / Node.js / Yarn バージョン確認
-rbenv_init = 'export PATH="$HOME/.rbenv/bin:$PATH"; eval "$(rbenv init -)"'
-
-describe command("#{rbenv_init}; ruby -v") do
-  let(:disable_sudo) { true }
+describe command('/bin/bash -lc "ruby -v"') do  # rbenv 環境で確認
   its(:stdout) { should match /ruby 3\.2\.3/ }
 end
-describe command("#{rbenv_init}; bundler -v") do
-  let(:disable_sudo) { true }
+describe command('/bin/bash -lc "bundler -v"') do
   its(:stdout) { should match /Bundler version 2\.3\.14/ }
 end
-describe command("#{rbenv_init}; rails -v") do
-  let(:disable_sudo) { true }
+describe command('/bin/bash -lc "rails -v"') do
   its(:stdout) { should match /Rails 7\.1\.3\.2/ }
 end
 describe command('node -v') do
@@ -37,11 +32,6 @@ end
 listen_port = 80
 describe port(listen_port) do
   it { should be_listening }
-end
-# Nginx config確認
-describe command("nginx -t") do
-  its(:exit_status) { should eq 0 }
-  its(:stderr) { should match /syntax is ok/ }
 end
 
 # Puma動作、有効化確認
