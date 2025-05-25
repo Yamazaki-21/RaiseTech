@@ -77,7 +77,7 @@ describe command("aws s3 ls s3://raisetech-test-bucket/") do
 end
 
 # vipsの確認
-describe command('vips --version') do
+describe command('/usr/local/bin/vips --version') do
   its(:exit_status) { should eq 0 }
   its(:stdout) { should match /^vips-/ }
 end
