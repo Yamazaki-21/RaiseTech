@@ -1,22 +1,23 @@
 require 'spec_helper'
 
-# Ruby / Bundler / Rails / Node.js / Yarn バージョン確認
+# Ruby / Bundler / Rails バージョン確認
 shared_shell = [
   'export PATH="$HOME/.rbenv/bin:$PATH"',
   'eval "$(rbenv init -)"'
 ].join(' && ')
-describe command(%Q(/bin/bash -lc "#{shared_shell} && ruby -v")) do
+describe command(%Q(/bin/bash -lc '#{shared_shell} && ruby -v')) do
   let(:disable_sudo) { true }
   its(:stdout) { should match %r{\Aruby 3\.2\.3} }
 end
-describe command(%Q(/bin/bash -lc "#{shared_shell} && bundler -v")) do
+describe command(%Q(/bin/bash -lc '#{shared_shell} && bundler -v')) do
   let(:disable_sudo) { true }
   its(:stdout) { should match %r{Bundler version 2\.3\.14} }
 end
-describe command(%Q(/bin/bash -lc "#{shared_shell} && rails -v")) do
+describe command(%Q(/bin/bash -lc '#{shared_shell} && rails -v')) do
   let(:disable_sudo) { true }
   its(:stdout) { should match %r{\ARails 7\.1\.3\.2} }
 end
+# Node.js / Yarn バージョン確認
 describe command('node -v') do
   let(:disable_sudo) { true }
   its(:stdout) { should match /v17\.9\.1/ }
