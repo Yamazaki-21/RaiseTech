@@ -32,7 +32,7 @@
     group: rails-app-group
     mode: '0775'
 
-- name: nginx.confを配置
+- name: nginx.confアップロード
   template:
     src: nginx.conf.j2
     dest: /etc/nginx/nginx.conf

@@ -71,7 +71,7 @@
   ansible.builtin.set_fact:
     secret_result: "{{ secret_json.stdout | from_json }}"
 
-- name: Railsのproduction用credentialsを配置
+- name: Railsのproduction用credentialsをアップロード
   copy:
     src: production.yml.enc
     dest: /var/www/rails-app/config/credentials/production.yml.enc
@@ -79,7 +79,7 @@
     group: ec2-user
     mode: '0640'
 
-- name: Railsのproduction用キーを配置
+- name: Railsのproduction用キーをアップロード
   copy:
     src: production.key
     dest: /var/www/rails-app/config/credentials/production.key
@@ -87,7 +87,7 @@
     group: ec2-user
     mode: '0600'
 
-- name: database.ymlを配置
+- name: database.ymlをアップロード
   template:
     src: database.yml.j2
     dest: "/var/www/rails-app/config/database.yml"
@@ -95,7 +95,7 @@
     group: ec2-user
     mode: '0775'
 
-- name: storage.ymlを配置
+- name: storage.ymlをアップロード
   template:
     src: storage.yml.j2
     dest: "/var/www/rails-app/config/storage.yml"

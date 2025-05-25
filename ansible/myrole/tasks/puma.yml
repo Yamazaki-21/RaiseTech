@@ -1,11 +1,11 @@
 ---
-- name: puma.serviceを配置
+- name: puma.serviceをアップロード
   template:
     src: puma.service.j2
     dest: /etc/systemd/system/puma.service
   become: yes
 
-- name: puma.rbを配置
+- name: puma.rbをアップロード
   template:
     src: puma.rb.j2
     dest: "/var/www/rails-app/config/puma.rb"
@@ -35,4 +35,4 @@
     state: started
     enabled: yes
   become: yes
-  
+ 
