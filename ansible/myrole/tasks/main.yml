@@ -11,5 +11,3 @@
 # Pumaサービスの設定
 - import_tasks: puma.yml
 
-# S3の設定
-- import_tasks: s3.yml
