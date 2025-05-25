@@ -1,17 +1,17 @@
 require 'spec_helper'
 
 # Ruby / Bundler / Rails / Node.js / Yarn バージョン確認
-describe command('ruby -v') do
+describe command('/bin/bash -lc "ruby -v"') do
   let(:disable_sudo) { true }
   its(:stdout) { should match /ruby 3\.2\.3/ }
 end
-describe gem('bundler') do
-  it { should be_installed.by('gem') }
-  its(:version) { should eq '2.3.14' }
-end
-describe command('rails -v') do
+describe command('/bin/bash -lc "bundler -v"') do
   let(:disable_sudo) { true }
-  its(:stdout) { should match(/Rails 7\.1\.3\.2/) }
+  its(:stdout) { should match /Bundler version 2\.3\.14/ }
+end
+describe command('/bin/bash -lc "rails -v"') do
+  let(:disable_sudo) { true }
+  its(:stdout) { should match /Rails 7\.1\.3\.2/ }
 end
 describe command('node -v') do
   let(:disable_sudo) { true }
