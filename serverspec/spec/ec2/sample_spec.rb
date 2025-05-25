@@ -5,15 +5,16 @@ shared_shell = [
   'export PATH="$HOME/.rbenv/bin:$PATH"',
   'eval "$(rbenv init -)"'
 ].join(' && ')
-describe command(%Q(/bin/bash -lc '#{shared_shell} && ruby -v')) do
+rails_app_path = '/var/www/rails-app'
+describe command(%Q(/bin/bash -lc '#{shared_shell} && cd #{rails_app_path} && ruby -v')) do
   let(:disable_sudo) { true }
   its(:stdout) { should match %r{\Aruby 3\.2\.3} }
 end
-describe command(%Q(/bin/bash -lc '#{shared_shell} && bundler -v')) do
+describe command(%Q(/bin/bash -lc '#{shared_shell} && cd #{rails_app_path} && bundler -v')) do
   let(:disable_sudo) { true }
   its(:stdout) { should match %r{Bundler version 2\.3\.14} }
 end
-describe command(%Q(/bin/bash -lc '#{shared_shell} && rails -v')) do
+describe command(%Q(/bin/bash -lc '#{shared_shell} && cd #{rails_app_path} && rails -v')) do
   let(:disable_sudo) { true }
   its(:stdout) { should match %r{\ARails 7\.1\.3\.2} }
 end

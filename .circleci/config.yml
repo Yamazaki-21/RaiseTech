@@ -120,12 +120,7 @@ jobs:
             mkdir -p ~/.ssh
             touch ~/.ssh/known_hosts
             echo "TARGET_HOST: ${TARGET_HOST}" 
-            if ssh-keygen -F ${TARGET_HOST} > /dev/null; then
-              echo "${TARGET_HOST} is already in known_hosts, skipping."
-            else
-              ssh-keyscan -H ${TARGET_HOST} >> ~/.ssh/known_hosts || echo "ssh-keyscan failed"
-            fi
-            cat ~/.ssh/known_hosts
+            ssh-keyscan -H ${TARGET_HOST} >> ~/.ssh/known_hosts
       - run:
           name: "Ansible Playbookを実行"
           command: |
@@ -205,15 +200,15 @@ workflows:
   version: 2
   raisetech:
     jobs:
-#      - Genarate_Cloudformation_Template
-#      - Run_Server_Test:
-#          requires:
-#            - Genarate_Cloudformation_Template
       - Genarate_Cloudformation_Template
-      - Deploy_Rails_App:
+      - Run_Server_Test:
           requires:
             - Genarate_Cloudformation_Template
-      - Run_Server_Test:         
-          requires:
-            - Deploy_Rails_App
+#      - Genarate_Cloudformation_Template
+#      - Deploy_Rails_App:
+#          requires:
+#            - Genarate_Cloudformation_Template
+#      - Run_Server_Test:         
+#          requires:
+#            - Deploy_Rails_App
 
