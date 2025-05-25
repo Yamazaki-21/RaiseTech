@@ -104,6 +104,14 @@
     group: ec2-user
     mode: '0775'
 
+- name: storage.yml を配置
+  template:
+    src: storage.yml.j2
+    dest: "/var/www/rails-app/config/storage.yml"
+    owner: ec2-user
+    group: ec2-user
+    mode: '0775'
+
 - name: データベース作成・マイグレーション・アセットプリコンパイルを実行
   shell: |
     export HOME=/home/ec2-user
