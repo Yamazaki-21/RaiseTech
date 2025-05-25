@@ -203,15 +203,15 @@ workflows:
   version: 2
   raisetech:
     jobs:
-      - Genarate_Cloudformation_Template
-      - Run_Server_Test:
-          requires:
-            - Genarate_Cloudformation_Template
 #      - Genarate_Cloudformation_Template
-#      - Deploy_Rails_App:
+#      - Run_Server_Test:
 #          requires:
 #            - Genarate_Cloudformation_Template
-#      - Run_Server_Test:         
-#          requires:
-#            - Deploy_Rails_App
+      - Genarate_Cloudformation_Template
+      - Deploy_Rails_App:
+          requires:
+            - Genarate_Cloudformation_Template
+      - Run_Server_Test:         
+          requires:
+            - Deploy_Rails_App
 
