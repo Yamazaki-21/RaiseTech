@@ -124,4 +124,7 @@
   shell: |
     export PATH=/usr/local/bin:$PATH
     cd /tmp/vips-8.16.1
-                                
+    meson setup build
+    ninja -C build
+    ninja -C build install
+
