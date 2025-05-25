@@ -4,14 +4,14 @@
     path: /var/www/rails-app/.git
   register: git_dir
 
-- name: .gitがなければRailsアプリのリポジトリをクローン
+- name: Railsアプリリポジトリをクローン
   git:
     repo: 'https://github.com/yuta-ushijima/raisetech-live8-sample-app.git'
     dest: /var/www/rails-app
     version: main
   when: not git_dir.stat.exists
 
-- name: bundle installを実行（rbenvのパスを明示）
+- name: bundle installを実行
   shell: |
     export HOME=/home/ec2-user
     export PATH="$HOME/.rbenv/bin:$HOME/.rbenv/shims:$PATH"
@@ -32,16 +32,16 @@
     chdir: /var/www/rails-app
     executable: /bin/bash
 
-- name: rbenvを使ってmysql2 gemをインストール
-  ansible.builtin.shell: |
-    export HOME=/home/ec2-user
-    export PATH="$HOME/.rbenv/bin:$HOME/.rbenv/shims:$PATH"
-    eval "$(rbenv init - bash)"
-    gem install mysql2 -- --with-mysql-config=/usr/bin/mysql_config
-  args:
-    executable: /bin/bash
+#- name: rbenvを使ってmysql2 gemをインストール
+#  ansible.builtin.shell: |
+#    export HOME=/home/ec2-user
+#    export PATH="$HOME/.rbenv/bin:$HOME/.rbenv/shims:$PATH"
+#    eval "$(rbenv init - bash)"
+#    gem install mysql2 -- --with-mysql-config=/usr/bin/mysql_config
+#  args:
+#    executable: /bin/bash
 
-- name: /var/www/rails-appとサブディレクトリを作成し権限を設定
+- name: /var/www/rails-appとサブディレクトリ権限付与
   file:
     path: /var/www/rails-app
     state: directory
@@ -104,7 +104,7 @@
     group: ec2-user
     mode: '0775'
 
-- name: storage.yml を配置
+- name: storage.ymlを配置
   template:
     src: storage.yml.j2
     dest: "/var/www/rails-app/config/storage.yml"
