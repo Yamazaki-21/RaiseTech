@@ -5,7 +5,7 @@
 ![](../lecture13/image/image01.png)
 2. AnsibleでEC2にRailsアプリをデプロイ[(使用したAnsible環境はこちら)](../ansible)
 ![](../lecture13/image/image02.png)
-3. ServerspecでEC2のテストを実施[(使用したServerspec環境はこちら)](../serverspec)<br>
+3. Serverspecでテストを実施[(使用したServerspec環境はこちら)](../serverspec)<br>
 ![](../lecture13/image/image03.png)
 ![](../lecture13/image/image04.png)
 
@@ -13,7 +13,8 @@
 ![](../lecture13/image/image05.png)
 
 - ファイル作成以外の設定として以下を実施<br>
-EC2接続用SSHキーをCircleCIの設定画面(Additional SSH Keys)から追加(EC2はCloudformationで作成するためIPアドレスが不定、hostは空を登録)
+EC2接続用SSHキーをCircleCIの設定画面(Additional SSH Keys)から追加<br>
+(EC2はCloudformationで作成するためIPアドレスが不定、hostは空で登録)
 ![](../lecture13/image/image06.png)
 環境変数をCircleCIの設定画面(Environment Variables)から追加
 ![](../lecture13/image/image07.png)
