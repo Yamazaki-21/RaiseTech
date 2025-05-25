@@ -85,8 +85,8 @@
   shell: |
     export PATH="$HOME/.rbenv/bin:$HOME/.rbenv/shims:$PATH"
     eval "$(rbenv init -)"
-    gem uninstall bundler
     gem install bundler -v 2.3.14
+    rbenv rehash
   args:
     executable: /bin/bash
   become: false
