@@ -1,5 +1,5 @@
 ---
-- name: 依存パsッケージをインストール(yum)
+- name: 依存パッケージをインストール(yum)
   ansible.builtin.shell: |
     sudo yum install -y gcc gcc-c++ make libyaml-devel libffi-devel readline-devel zlib-devel openssl-devel git curl mariadb-devel
 
