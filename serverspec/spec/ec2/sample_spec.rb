@@ -6,7 +6,8 @@ describe command('ruby -v') do
   its(:stdout) { should match /ruby 3\.2\.3/ }
 end
 describe gem('bundler') do
-  it { should be_installed.by('gem').with_version('2.3.14') }
+  it { should be_installed.by('gem') }
+  its(:version) { should eq '2.3.14' }
 end
 describe command('rails -v') do
   let(:disable_sudo) { true }
