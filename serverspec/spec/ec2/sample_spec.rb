@@ -8,8 +8,9 @@ end
 describe gem('bundler') do
   it { should be_installed.by('gem').with_version('2.3.14') }
 end
-describe gem('rails') do
-  it { should be_installed.by('gem').with_version('7.1.3.2') }
+describe command('rails -v') do
+  let(:disable_sudo) { true }
+  its(:stdout) { should match(/Rails 7\.1\.3\.2/) }
 end
 describe command('node -v') do
   let(:disable_sudo) { true }
