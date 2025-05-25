@@ -32,15 +32,6 @@
     chdir: /var/www/rails-app
     executable: /bin/bash
 
-#- name: rbenvを使ってmysql2 gemをインストール
-#  ansible.builtin.shell: |
-#    export HOME=/home/ec2-user
-#    export PATH="$HOME/.rbenv/bin:$HOME/.rbenv/shims:$PATH"
-#    eval "$(rbenv init - bash)"
-#    gem install mysql2 -- --with-mysql-config=/usr/bin/mysql_config
-#  args:
-#    executable: /bin/bash
-
 - name: /var/www/rails-appとサブディレクトリ権限付与
   file:
     path: /var/www/rails-app
@@ -80,7 +71,7 @@
   ansible.builtin.set_fact:
     secret_result: "{{ secret_json.stdout | from_json }}"
 
-- name: Railsのproduction用credentialsをアップロード
+- name: Railsのproduction用credentialsを配置
   copy:
     src: production.yml.enc
     dest: /var/www/rails-app/config/credentials/production.yml.enc
@@ -88,7 +79,7 @@
     group: ec2-user
     mode: '0640'
 
-- name: Railsのproduction用キーをアップロード
+- name: Railsのproduction用キーを配置
   copy:
     src: production.key
     dest: /var/www/rails-app/config/credentials/production.key

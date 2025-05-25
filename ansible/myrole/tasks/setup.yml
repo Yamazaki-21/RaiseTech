@@ -1,5 +1,5 @@
 ---
-- name: 依存パッケージをインストール(yum)
+- name: 依存パsッケージをインストール(yum)
   ansible.builtin.shell: |
     sudo yum install -y gcc gcc-c++ make libyaml-devel libffi-devel readline-devel zlib-devel openssl-devel git curl mariadb-devel
 
@@ -99,9 +99,13 @@
 
 - name: vips の依存関係をインストール（シェル経由）
   ansible.builtin.shell: |
-    sudo yum install -y glib2-devel libxml2-devel libjpeg-turbo-devel libpng-devel libtiff-devel fftw-devel libexif-devel libgsf-devel giflib-devel libwebp-devel librsvg2-devel gobject-introspection-devel cairo-devel orc-devel poppler-glib-devel gdk-pixbuf2-devel make gcc gcc-c++ tar
+    sudo yum install -y \
+      glib2-devel libxml2-devel libjpeg-turbo-devel libpng-devel \
+      libtiff-devel fftw-devel libexif-devel libgsf-devel giflib-devel \
+      libwebp-devel librsvg2-devel gobject-introspection-devel \
+      cairo-devel orc-devel poppler-glib-devel gdk-pixbuf2-devel tar
 
-- name: pip3 を使って meson と ninja をインストール
+- name: pip3でmeson,ninja をインストール
   pip:
     name:
       - meson
@@ -113,7 +117,7 @@
     url: "https://github.com/libvips/libvips/releases/download/v8.16.1/vips-8.16.1.tar.xz"
     dest: /tmp/vips.tar.xz
 
-- name: libvips を展開する
+- name: libvipsを展開
   unarchive:
     src: /tmp/vips.tar.xz
     dest: /tmp/
@@ -127,4 +131,14 @@
     meson setup build
     ninja -C build
     ninja -C build install
+
+- name: /usr/local/lib64をld.soに登録
+  become: true
+  copy:
+    dest: /etc/ld.so.conf.d/local-libvips.conf
+    content: "/usr/local/lib64\n"
+
+- name: ライブラリキャッシュを更新
+  become: true
+  command: ldconfig
 
