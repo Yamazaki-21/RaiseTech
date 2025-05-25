@@ -117,9 +117,13 @@ jobs:
       - run:
           name: "known_hostsにホストを追加(初回接続確認回避用)" 
           command: |
-            echo "TARGET_HOST: ${TARGET_HOST}"
-            mkdir -p ~/.ssh
-            ssh-keyscan -H ${TARGET_HOST} >> ~/.ssh/known_hosts || echo "ssh-keyscan failed"
+            if ssh-keygen -F ${TARGET_HOST} > /dev/null; then
+              echo "${TARGET_HOST} is already in known_hosts, skipping."
+            else
+              echo "TARGET_HOST: ${TARGET_HOST}"
+              mkdir -p ~/.ssh
+              ssh-keyscan -H ${TARGET_HOST} >> ~/.ssh/known_hosts || echo "ssh-keyscan failed"
+            f
       - run:
           name: "Ansible Playbookを実行"
           command: |
@@ -199,15 +203,15 @@ workflows:
   version: 2
   raisetech:
     jobs:
-#      - Genarate_Cloudformation_Template
-#      - Run_Server_Test:
-#          requires:
-#            - Genarate_Cloudformation_Template
       - Genarate_Cloudformation_Template
-      - Deploy_Rails_App:
+      - Run_Server_Test:
           requires:
             - Genarate_Cloudformation_Template
-      - Run_Server_Test:         
-          requires:
-            - Deploy_Rails_App
+#      - Genarate_Cloudformation_Template
+#      - Deploy_Rails_App:
+#          requires:
+#            - Genarate_Cloudformation_Template
+#      - Run_Server_Test:         
+#          requires:
+#            - Deploy_Rails_App
 

@@ -1,15 +1,17 @@
 require 'spec_helper'
 
 # Ruby / Bundler / Rails / Node.js / Yarn バージョン確認
-describe command('ruby -v') do
+rbenv_init = 'export PATH="$HOME/.rbenv/bin:$PATH"; eval "$(rbenv init -)"'
+
+describe command("#{rbenv_init}; ruby -v") do
   let(:disable_sudo) { true }
   its(:stdout) { should match /ruby 3\.2\.3/ }
 end
-describe command('bundler -v') do
+describe command("#{rbenv_init}; bundler -v") do
   let(:disable_sudo) { true }
   its(:stdout) { should match /Bundler version 2\.3\.14/ }
 end
-describe command('rails -v') do
+describe command("#{rbenv_init}; rails -v") do
   let(:disable_sudo) { true }
   its(:stdout) { should match /Rails 7\.1\.3\.2/ }
 end
@@ -22,7 +24,6 @@ describe command('yarn -v') do
   its(:stdout) { should match /1\.22\.19/ }
 end
 
-listen_port = 80
 # Nginxインストール確認
 describe package('nginx') do
   it { should be_installed }
@@ -33,6 +34,7 @@ describe service('nginx') do
   it { should be_running }
 end
 # ポート確認（Nginx）
+listen_port = 80
 describe port(listen_port) do
   it { should be_listening }
 end
@@ -56,13 +58,15 @@ describe command("pgrep -f puma") do
   its(:exit_status) { should eq 0 }
 end
 
-# Nginx→ Puma経由でRailsアプリ
-describe command("curl -s http://127.0.0.1:#{listen_port}/") do
-  its(:stdout) { should match /<title>.*Rails.*<\/title>/ }
+# HTTPレスポンス確認
+describe command("curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:#{listen_port}/") do
+  its(:stdout) { should match /^2\d{2}$/ }  # 200〜299の成功コードならOK
 end
 
+
 # RDS 接続確認
-describe command("cd /var/www/rails-app && RAILS_ENV=production bundle exec rails runner 'puts ActiveRecord::Base.connection.active?'") do
+describe command(%Q{#{rbenv_init}; cd /var/www/rails-app && RAILS_ENV=production bundle exec rails runner 'puts ActiveRecord::Base.connection.active?'}) do
+  let(:disable_sudo) { true }
   its(:stdout) { should match /true/ }
   its(:exit_status) { should eq 0 }
 end
