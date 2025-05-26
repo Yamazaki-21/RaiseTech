@@ -14,6 +14,7 @@
       - curl
       - mariadb-devel
     state: present
+    use_backend: dnf4
   become: true
 
 - name: Python 3.8用にboto3,botocoreをインストール
