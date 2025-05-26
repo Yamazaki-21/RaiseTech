@@ -1,6 +1,6 @@
 ---
 - name: 依存パッケージをインストール(yum)
-  yum:
+  ansible.legacy.yum:
     name:
       - gcc
       - gcc-c++
