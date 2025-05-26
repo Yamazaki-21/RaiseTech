@@ -1,9 +1,24 @@
 ---
-- name: Amazon Linux Extrasでnginx1リポジトリを有効化、yumを更新してnginxをインストール
-  ansible.builtin.shell: |
-    amazon-linux-extras enable nginx1
-    yum update -y
-    yum install -y nginx
+- name: nginx1リポジトリが有効化済みか確認（Amazon Linux Extras）
+  ansible.builtin.shell: amazon-linux-extras list | grep -E 'nginx1\s+\[e\]'
+  register: nginx_repo_enabled
+  ignore_errors: true
+  changed_when: false
+
+- name: nginx1リポジトリを有効化
+  ansible.builtin.shell: amazon-linux-extras enable nginx1
+  when: nginx_repo_enabled.rc != 0
+  become: true
+
+- name: yumパッケージの更新
+  ansible.builtin.command: yum update -y
+  when: nginx_repo_enabled.rc != 0
+  become: true
+
+- name: nginxをインストール
+  ansible.builtin.yum:
+    name: nginx
+    state: present
   become: true
 
 - name: rails-app-groupグループ作成
