@@ -9,7 +9,7 @@ orbs:
 jobs:
 
   # CloudFormationテンプレートを使用してスタック作成
-  Genarate_Cloudformation_Template:
+  Generate_Cloudformation_Template:
     docker:
       - image: cimg/python:3.11
     steps:
@@ -29,10 +29,6 @@ jobs:
               --capabilities CAPABILITY_NAMED_IAM \
               --parameter-overrides DBUsername=Admin
       - run:
-          name: "SecretsManagerスタックの作成完了待機"
-          command: |
-            aws cloudformation wait stack-create-complete --stack-name secrets-stack   
-      - run:
           name: "メインCloudFormationスタック作成"
           command: |
             aws cloudformation deploy \
@@ -40,10 +36,6 @@ jobs:
               --stack-name raisetech-stack \
               --capabilities CAPABILITY_NAMED_IAM \
               --parameter-overrides DBUsername=Admin MyIpAdress=133.32.183.11/32
-      - run:
-          name: "メインCloudFormationスタックの作成完了待機"
-          command: |
-            aws cloudformation wait stack-create-complete --stack-name raisetech-stack
       - run:
           name: "EC2インスタンスのパブリックIP取得(Ansible, Serverspec実行時に使用)"
           command: |
@@ -200,10 +192,10 @@ workflows:
   version: 2
   raisetech:
     jobs:
-      - Genarate_Cloudformation_Template
+      - Generate_Cloudformation_Template
       - Deploy_Rails_App:
           requires:
-            - Genarate_Cloudformation_Template
+            - Generate_Cloudformation_Template
       - Run_Server_Test:         
           requires:
             - Deploy_Rails_App
