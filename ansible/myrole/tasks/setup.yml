@@ -20,7 +20,7 @@
     label: "{{ item }}"
 
 - name: パッケージをインストール（yum）
-  ansible.builtin.shell: sudo yum install -y {{ item.item }}
+  ansible.builtin.shell: yum install -y {{ item.item }}
   when: item.rc != 0
   loop: "{{ package_check_results.results }}"
   loop_control:
