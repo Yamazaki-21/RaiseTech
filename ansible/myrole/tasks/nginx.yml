@@ -15,10 +15,15 @@
   when: nginx_repo_enabled.rc != 0
   become: true
 
+- name: nginxがすでにインストールされているか確認
+  ansible.builtin.shell: rpm -q nginx
+  register: nginx_installed
+  ignore_errors: true
+  changed_when: false
+
 - name: nginxをインストール
-  ansible.builtin.yum:
-    name: nginx
-    state: present
+  ansible.builtin.shell: yum install -y nginx
+  when: nginx_installed.rc != 0
   become: true
 
 - name: rails-app-groupグループ作成
