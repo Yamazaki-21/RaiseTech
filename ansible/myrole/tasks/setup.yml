@@ -1,30 +1,20 @@
 ---
-- name: 必要なパッケージがインストールされているか確認（rpm）
-  ansible.builtin.shell: rpm -q {{ item }}
-  register: package_check_results
-  changed_when: false
-  failed_when: false
-  loop:
-    - gcc
-    - gcc-c++
-    - make
-    - libyaml-devel
-    - libffi-devel
-    - readline-devel
-    - zlib-devel
-    - openssl-devel
-    - git
-    - curl
-    - mariadb-devel
-  loop_control:
-    label: "{{ item }}"
-
-- name: パッケージをインストール（yum）
-  ansible.builtin.shell: yum install -y {{ item.item }}
-  when: item.rc != 0
-  loop: "{{ package_check_results.results }}"
-  loop_control:
-    label: "{{ item.item }}"
+- name: 必要なパッケージをまとめてインストール（yum）
+  ansible.builtin.yum:
+    name:
+      - gcc
+      - gcc-c++
+      - make
+      - libyaml-devel
+      - libffi-devel
+      - readline-devel
+      - zlib-devel
+      - openssl-devel
+      - git
+      - curl
+      - mariadb-devel
+    state: present
+  become: true
 
 - name: Python 3.8用にboto3,botocoreをインストール
   ansible.builtin.pip:
@@ -141,38 +131,28 @@
     fi
   become: false
 
-- name: vips の依存パッケージがインストールされているか確認
-  ansible.builtin.shell: rpm -q {{ item }}
-  register: vips_package_check_results
-  changed_when: false
-  failed_when: false
-  loop:
-    - glib2-devel
-    - libxml2-devel
-    - libjpeg-turbo-devel
-    - libpng-devel
-    - libtiff-devel
-    - fftw-devel
-    - libexif-devel
-    - libgsf-devel
-    - giflib-devel
-    - libwebp-devel
-    - librsvg2-devel
-    - gobject-introspection-devel
-    - cairo-devel
-    - orc-devel
-    - poppler-glib-devel
-    - gdk-pixbuf2-devel
-    - tar
-  loop_control:
-    label: "{{ item }}"
-
-- name: vips の依存パッケージをインストール（未インストールのみ）
-  ansible.builtin.shell: yum install -y {{ item.item }}
-  when: item.rc != 0
-  loop: "{{ vips_package_check_results.results }}"
-  loop_control:
-    label: "{{ item.item }}"
+- name: vips の依存パッケージをまとめてインストール
+  ansible.builtin.yum:
+    name:
+      - glib2-devel
+      - libxml2-devel
+      - libjpeg-turbo-devel
+      - libpng-devel
+      - libtiff-devel
+      - fftw-devel
+      - libexif-devel
+      - libgsf-devel
+      - giflib-devel
+      - libwebp-devel
+      - librsvg2-devel
+      - gobject-introspection-devel
+      - cairo-devel
+      - orc-devel
+      - poppler-glib-devel
+      - gdk-pixbuf2-devel
+      - tar
+    state: present
+  become: true
 
 - name: pip3でmeson,ninja をインストール
   ansible.builtin.pip:

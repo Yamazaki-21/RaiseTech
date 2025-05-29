@@ -11,19 +11,16 @@
   become: true
 
 - name: yumパッケージの更新
-  ansible.builtin.command: yum update -y
+  ansible.builtin.yum:
+    name: '*'
+    state: latest
   when: nginx_repo_enabled.rc != 0
   become: true
 
-- name: nginxがすでにインストールされているか確認
-  ansible.builtin.shell: rpm -q nginx
-  register: nginx_installed
-  ignore_errors: true
-  changed_when: false
-
 - name: nginxをインストール
-  ansible.builtin.shell: yum install -y nginx
-  when: nginx_installed.rc != 0
+  ansible.builtin.yum:
+    name: nginx
+    state: present
   become: true
 
 - name: rails-app-groupグループ作成

@@ -63,8 +63,8 @@ jobs:
       - run:
           name: "Ansible、AWSモジュールインストール"
           command: |
-            pip install --upgrade pip
-            pip install ansible Boto3 botocore
+            pip install --upgrade pip setuptools wheel
+            pip install ansible==2.16.6 Boto3 botocore
             ansible-galaxy collection install amazon.aws
             ansible --version
       - run:
