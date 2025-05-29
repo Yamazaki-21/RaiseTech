@@ -63,10 +63,9 @@ jobs:
       - run:
           name: "Ansible、AWSモジュールインストール"
           command: |
-            ansible --version
             pip install --upgrade pip setuptools wheel
             pip install ansible-core~=2.16.0
-            pip install 'ansible>=6.0.0,<7.0.0'
+            pip install 'ansible>=9.0.0,<10.0.0'
             pip install boto3 botocore
             ansible-galaxy collection install amazon.aws
             ansible --version
