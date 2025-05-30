@@ -1,21 +1,19 @@
-# Railsアプリケーションのインフラ構築と自動デプロイ
+# Railsアプリケーションのインフラ構築とデプロ自動化
+本リポジトリは、AWS上にRailsアプリケーションの実行環境を自動構築し、効率的かつ確実に運用するためのインフラ構築およびデプロイの実践的な手法を記録する。
 
-このリポジトリでは、AWSと自動化ツールを用いてRailsアプリケーションのインフラ構築および自動デプロイの実践内容を記録する。
+## ■自動化の全体フロー
+### ◯自動構築の流れ
+Gitリポジトリへのpushをトリガーに、CircleCIが一連の処理を自動で実行する。以下のステップにより、インフラ構築からアプリケーションのデプロイ、動作検証までを一括して行う。
+1. AWSリソースのプロビジョニング<br>
+   CloudFormation によって、VPC、ALB、EC2、RDS、S3などの AWSリソース(スタック)を構築する。
+2. Railsアプリのデプロイ環境構築<br>
+   Ansibleにより、Rails実行環境(各種ミドルウェアや依存パッケージ)を構成する。
+3. サーバー構成のテスト<br>
+   Serverspec によって、構成されたサーバーが要件どおりに動作するかを検証する。
 
-## ■ インフラ自動化の全体フロー
-### ◯ インフラ自動構築の流れ
-
-#### 〇  GitリポジトリへのPushをトリガーにCircleCIにより、以下の処理を自動実行
-1. AWSリソースのプロビジョニング
-   - CloudFormationにより、VPC, ALB, EC2, RDS, S3などのAWSリソースを構築
-
-2. Railsアプリのデプロイ環境構築
-   - Ansibleにより、Rails実行環境（各種ミドルウェアや依存パッケージ）を構築
-
-3. サーバー構成のテスト
-   - Serverspecにより、構成されたサーバーが要件どおりに動作するかを検証
 
 ### ◯ 構成図
+下記の図は、本リポジトリで構築する環境の全体構成である。
 ![構成図](./diagram/rails-app-automation-architecture.png)<br>
 [構造図ファイル - rails-app-automation-architecture.drawio](./diagram/rails-app-automation-architecture.drawio)
 
@@ -23,33 +21,25 @@
 ### ◯ サンプルアプリケーション
 [GitHubリポジトリ - yuta-ushijima/raisetech-live8-sample-app](https://github.com/yuta-ushijima/raisetech-live8-sample-app)
 
-<table>
-  <tr>
-    <td>
-      <b>使用技術(バージョン情報)</b>
-      <table border="1" cellspacing="0" cellpadding="5">
-        <tr><th>項目</th><th>バージョン</th></tr>
-        <tr><td>Ruby</td><td>3.2.3</td></tr>
-        <tr><td>Bundler</td><td>2.3.14</td></tr>
-        <tr><td>Rails</td><td>7.1.3.2</td></tr>
-        <tr><td>Node.js</td><td>v17.9.1</td></tr>
-        <tr><td>Yarn</td><td>1.22.19</td></tr>
-      </table>
-    </td>
-    <td style="padding-left: 40px;">
-      <b>ミドルウェア・ストレージ</b>
-      <table border="1" cellspacing="0" cellpadding="5">
-        <tr><th>種別</th><th>使用技術</th></tr>
-        <tr><td>Webサーバー</td><td>Nginx</td></tr>
-        <tr><td>アプリケーションサーバー</td><td>Puma</td></tr>
-        <tr><td>データベース</td><td>MySQL(Amazon RDS)</td></tr>
-        <tr><td>ストレージ</td><td>Amazon S3</td></tr>
-      </table>
-    </td>
-  </tr>
-</table>
+### ◯ 使用技術
+| 項目       | バージョン   |
+|------------|--------------|
+| Ruby       | 3.2.3        |
+| Bundler    | 2.3.14       |
+| Rails      | 7.1.3.2      |
+| Node.js    | v17.9.1      |
+| Yarn       | 1.22.19      |
 
-## ■ 学習内容と課題
+### ◯ ミドルウェア・ストレージ
+| 種別                     | 項目            |
+|--------------------------|--------------------|
+| Webサーバー              | Nginx               |
+| アプリケーションサーバー  | Puma                 |
+| データベース             | Amazon RDS for MySQL |
+| ストレージ               | Amazon S3           |
+
+
+## ■ 学習記録
 | No. | 学習内容                        | 課題内容                                                               | 提出物                                 |
 |-----|---------------------------------|------------------------------------------------------------------------|----------------------------------------|
 | 1   | インフラ基礎・AWS概要           | AWSアカウント作成、IAM設定、Rubyスクリプト実行                        | Discordにて提出                         |
@@ -62,9 +52,9 @@
 | 8   | 環境構築の実演①                | -                                                                      | なし                                    |
 | 9   | 環境構築の実演②                | -                                                                      | なし                                    |
 | 10  | インフラ構成のコード化         | AWS構成をCloudFormationテンプレート化して再構築                        | [lecture10.md](./lecture10/lecture10.md) |
-| 11  | インフラテスト（ServerSpec）   | ServerSpecを使って構成が正しいかを自動テスト                           | [lecture11.md](./lecture11/lecture11.md) |
+| 11  | インフラテスト（Serverspec）   | ServerSpecを使って構成が正しいかを自動テスト                           | [lecture11.md](./lecture11/lecture11.md) |
 | 12  | CI/CDとTerraformの基礎         | CircleCI導入と基本的なジョブの動作検証                                 | [lecture12.md](./lecture12/lecture12.md) |
-| 13  | 自動化パイプライン構築         | CircleCIでCloudFormation → Ansible → ServerSpecを自動実行              | [lecture13.md](./lecture13/lecture13.md) |
+| 13  | 自動化パイプライン構築         | CircleCIでCloudFormation → Ansible → Serverspecを自動実行              | [lecture13.md](./lecture13/lecture13.md) |
 | 14  | 環境構築の実演③                | -                                                                      | なし                                    |
 | 15  | 環境構築の実演④                | -                                                                      | なし                                    |
 | 16  | 現場で活きるスキルの整理       | 就職・転職を見据えた知識の整理と振り返り                               | なし                                    |
