@@ -1,0 +1,69 @@
+---
+- name: nginx1リポジトリが有効化済みか確認（Amazon Linux Extras）
+  ansible.builtin.shell: amazon-linux-extras list | grep -E 'nginx1\s+\[e\]'
+  register: nginx_repo_enabled
+  ignore_errors: true
+  changed_when: false
+
+- name: nginx1リポジトリを有効化
+  ansible.builtin.shell: amazon-linux-extras enable nginx1
+  when: nginx_repo_enabled.rc != 0
+  become: true
+
+- name: yumパッケージの更新
+  ansible.builtin.yum:
+    name: '*'
+    state: latest
+  when: nginx_repo_enabled.rc != 0
+  become: true
+
+- name: nginxをインストール
+  ansible.builtin.yum:
+    name: nginx
+    state: present
+  become: true
+
+- name: rails-app-groupグループ作成
+  group:
+    name: rails-app-group
+    state: present
+
+- name: ec2-userをrails-app-groupに追加
+  user:
+    name: ec2-user
+    groups: rails-app-group
+    append: yes
+
+- name: nginxユーザーをrails-app-groupに追加
+  user:
+    name: nginx
+    groups: rails-app-group
+    append: yes
+
+- name: /var/www/rails-appとサブディレクトリに権限を設定
+  file:
+    path: /var/www/rails-app
+    state: directory
+    recurse: yes
+    owner: ec2-user
+    group: rails-app-group
+    mode: '0775'
+
+- name: nginx.confアップロード
+  template:
+    src: nginx.conf.j2
+    dest: /etc/nginx/nginx.conf
+  become: yes
+
+- name: systemdをリロード(Nginxサービス変更を反映)
+  systemd:
+    daemon_reload: yes
+  become: yes
+
+- name: Nginxサービスを起動・有効化
+  systemd:
+    name: nginx
+    state: started
+    enabled: yes
+  become: yes
+

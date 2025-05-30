@@ -1,0 +1,8 @@
+- name: Setup web server
+  hosts: web
+  become: yes
+  vars:
+    ansible_pkg_mgr: yum
+  roles:
+    - myrole
+

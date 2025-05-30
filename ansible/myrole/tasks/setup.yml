@@ -1,0 +1,218 @@
+---
+- name: 必要なパッケージをまとめてインストール（yum）
+  ansible.builtin.yum:
+    name:
+      - gcc
+      - gcc-c++
+      - make
+      - libyaml-devel
+      - libffi-devel
+      - readline-devel
+      - zlib-devel
+      - openssl-devel
+      - git
+      - curl
+      - mariadb-devel
+    state: present
+  become: true
+
+- name: Python 3.8用にboto3,botocoreをインストール
+  ansible.builtin.pip:
+    name:
+      - boto3
+      - botocore
+    executable: /usr/local/bin/pip3.8
+
+- name: NVMをインストール
+  ansible.builtin.shell: |
+    if [ ! -d "$HOME/.nvm" ]; then
+      curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
+    fi
+  args:
+    executable: /bin/bash
+  environment:
+    HOME: "/home/ec2-user"
+  become: false
+  changed_when: false
+
+- name: NVMを読み込み、Node.js 17.9.1をインストール
+  ansible.builtin.shell: |
+    export NVM_DIR="$HOME/.nvm"
+    [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+    if ! nvm ls 17.9.1 > /dev/null 2>&1; then
+      nvm install 17.9.1
+      nvm alias default 17.9.1
+    fi
+  args:
+    executable: /bin/bash
+  environment:
+    HOME: "/home/ec2-user"
+  become: false
+
+- name: npm経由でYarnをインストール
+  ansible.builtin.shell: |
+    export NVM_DIR="$HOME/.nvm"
+    [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+    if ! npm list -g yarn@1.22.19 > /dev/null 2>&1; then
+      npm install -g yarn@1.22.19
+    fi
+  args:
+    executable: /bin/bash
+  environment:
+    HOME: "/home/ec2-user"
+  become: false
+
+- name: rbenvがクローン済みか確認
+  ansible.builtin.stat:
+    path: "/home/ec2-user/.rbenv"
+  register: rbenv_dir
+  become: false
+
+- name: rbenvをクローン
+  ansible.builtin.git:
+    repo: 'https://github.com/rbenv/rbenv.git'
+    dest: /home/ec2-user/.rbenv
+    update: no
+  become: false
+  when: not rbenv_dir.stat.exists
+
+- name: ruby-buildプラグインのディレクトリがあるか確認
+  ansible.builtin.stat:
+    path: "/home/ec2-user/.rbenv/plugins/ruby-build"
+  register: ruby_build_dir
+  become: false
+
+- name: ruby-buildプラグインをクローン
+  ansible.builtin.git:
+    repo: 'https://github.com/rbenv/ruby-build.git'
+    dest: /home/ec2-user/.rbenv/plugins/ruby-build
+    update: no
+  become: false
+  when: not ruby_build_dir.stat.exists
+
+- name: rbenv環境をセットアップ
+  ansible.builtin.shell: |
+    if ! grep -q 'rbenv init - bash' ~/.bashrc; then
+      echo 'export PATH="$HOME/.rbenv/bin:$HOME/.rbenv/shims:$PATH"' >> ~/.bashrc
+      echo 'eval "$(rbenv init - bash)"' >> ~/.bashrc
+    fi
+  args:
+    executable: /bin/bash
+  become: false
+
+- name: rbenvでRuby 3.2.3をインストール
+  ansible.builtin.shell: |
+    export PATH="$HOME/.rbenv/bin:$HOME/.rbenv/shims:$PATH"
+    eval "$(rbenv init - bash)"
+    if ! rbenv versions | grep -q '3.2.3'; then
+      rbenv install 3.2.3
+      rbenv global 3.2.3
+    fi
+  args:
+    executable: /bin/bash
+  become: false
+
+- name: Bundler 2.3.14をインストール
+  ansible.builtin.shell: |
+    export PATH="$HOME/.rbenv/bin:$HOME/.rbenv/shims:$PATH"
+    eval "$(rbenv init -)"
+    if ! gem list bundler -i -v 2.3.14; then
+      gem install bundler -v 2.3.14
+      rbenv rehash
+    fi
+  args:
+    executable: /bin/bash
+  become: false
+
+- name: Rails 7.1.3.2をインストール
+  ansible.builtin.shell: |
+    if ! gem list rails -i -v 7.1.3.2; then
+      gem install rails -v 7.1.3.2
+    fi
+  become: false
+
+- name: vips の依存パッケージをまとめてインストール
+  ansible.builtin.yum:
+    name:
+      - glib2-devel
+      - libxml2-devel
+      - libjpeg-turbo-devel
+      - libpng-devel
+      - libtiff-devel
+      - fftw-devel
+      - libexif-devel
+      - libgsf-devel
+      - giflib-devel
+      - libwebp-devel
+      - librsvg2-devel
+      - gobject-introspection-devel
+      - cairo-devel
+      - orc-devel
+      - poppler-glib-devel
+      - gdk-pixbuf2-devel
+      - tar
+    state: present
+  become: true
+
+- name: pip3でmeson,ninja をインストール
+  ansible.builtin.pip:
+    name:
+      - meson
+      - ninja
+    executable: pip3
+    state: present
+
+- name: libvipsソースファイルの存在確認
+  ansible.builtin.stat:
+    path: /tmp/vips.tar.xz
+  register: vips_tar_stat
+
+- name: libvipsソースをダウンロード
+  ansible.builtin.get_url:
+    url: "https://github.com/libvips/libvips/releases/download/v8.16.1/vips-8.16.1.tar.xz"
+    dest: /tmp/vips.tar.xz
+  when: not vips_tar_stat.stat.exists
+
+- name: libvips展開済みディレクトリの存在確認
+  ansible.builtin.stat:
+    path: /tmp/vips-8.16.1
+  register: vips_dir_stat
+
+- name: libvipsを展開
+  ansible.builtin.unarchive:
+    src: /tmp/vips.tar.xz
+    dest: /tmp/
+    remote_src: yes
+    extra_opts: [--xz]
+  when: not vips_dir_stat.stat.exists
+
+- name: meson,ninjaでlibvipsをビルド・インストール
+  ansible.builtin.shell: |
+    export PATH=/usr/local/bin:$PATH
+    if ! command -v vips > /dev/null 2>&1; then
+      cd /tmp/vips-8.16.1
+      meson setup build
+      ninja -C build
+      ninja -C build install
+    fi
+
+- name: /usr/local/lib64をld.soに登録済みか確認
+  ansible.builtin.stat:
+    path: /etc/ld.so.conf.d/local-libvips.conf
+  register: ldconf_stat
+  become: true
+
+- name: /usr/local/lib64をld.soに登録
+  ansible.builtin.copy:
+    dest: /etc/ld.so.conf.d/local-libvips.conf
+    content: "/usr/local/lib64\n"
+  become: true
+  register: ldconf_copy
+  changed_when: ldconf_copy.changed
+
+- name: ライブラリキャッシュを更新
+  ansible.builtin.command: ldconfig
+  become: true
+  when: ldconf_copy.changed
+
+

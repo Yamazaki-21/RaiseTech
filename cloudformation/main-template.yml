@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: Raisetech lecture10 (CloudFormation Template)
+Description: Raisetech lecture13(CloudFormation Template)
 
 Parameters:
   DBUsername:
@@ -214,20 +214,47 @@ Resources:
               - s3:PutObject
               - s3:ListBucket
             Resource: 
-              - arn:aws:s3:::raiseitech-bucket/*
-              - arn:aws:s3:::raiseitech-bucket
+              - arn:aws:s3:::raisetech-test-bucket/*
+              - arn:aws:s3:::raisetech-test-bucket
+          - Effect: Allow
+            Action:
+              - cloudformation:DescribeStacks
+            Resource:
+              - !Sub arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/${AWS::StackName}/*
+          - Effect: Allow
+            Action:
+              - secretsmanager:GetSecretValue
+              - secretsmanager:DescribeSecret
+            Resource: 
+              - !Sub arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:db-secret-*
 
   # EC2インスタンスの作成  
   EC2Instance:  
     Type: AWS::EC2::Instance  
     Properties:  
-      InstanceType: t2.micro  # EC2インスタンスのタイプ
-      ImageId: ami-0a6fd4c92fc6ed7d5  # 使用するAMIのID(Amazon Linux 2023)
+      InstanceType: t2.small  # EC2インスタンスのタイプ
+      ImageId: ami-037843ed9009f7d41  # 使用するAMIのID(Amazon Linux 2)
       KeyName: raisetech-kypr  # SSHキーの名前
       SecurityGroupIds:  
         - !Ref EC2SecurityGroup    # EC2インスタンスに適用するセキュリティグループ
       SubnetId: !Ref PublicSubnet1  # EC2インスタンスが配置されるサブネット
       IamInstanceProfile : !Ref EC2InstanceProfile  # IAMロールを関連付ける
+      UserData:
+        !Base64 |
+          #!/bin/bash
+          yum update -y
+          yum groupinstall -y "Development Tools"
+          yum install -y gcc zlib-devel bzip2 bzip2-devel readline-devel sqlite sqlite-devel openssl-devel xz xz-devel libffi-devel wget
+
+          cd /usr/src
+          wget https://www.python.org/ftp/python/3.8.18/Python-3.8.18.tgz
+          tar xzf Python-3.8.18.tgz
+          cd Python-3.8.18
+          ./configure --enable-optimizations
+          make altinstall
+ 
+          ln -s /usr/local/bin/python3.8 /usr/bin/python3
+
       Tags:  
         - Key: Name  
           Value: raisetech-ec2  # EC2インスタンスのタグ（名前）
@@ -247,7 +274,7 @@ Resources:
           FromPort: 22  # 最小ポート番号
           ToPort: 22  # 最大ポート番号
           CidrIp: !Ref MyIpAdress  # SSHが許可するIPアドレス
-    
+
   # RDSインスタンスの作成  
   RDSInstance:  
     Type: AWS::RDS::DBInstance  
@@ -256,7 +283,7 @@ Resources:
       Engine: MySQL    # RDSで使用するデータベースエンジン
       EngineVersion: 8.0.39  # MySQLバージョン
       MasterUsername: !Ref DBUsername  # 管理者ユーザー名
-      MasterUserPassword: '{{resolve:secretsmanager:my-db-secret}}' # 管理者ユーザーパスワード
+      MasterUserPassword: '{{resolve:secretsmanager:db-secret:SecretString:password}}' # 管理者ユーザーパスワード
       DBInstanceIdentifier: raisetech-database  # RDSインスタンスの識別子
       AllocatedStorage: 10  # ストレージサイズ（GB）
       VPCSecurityGroups:  
@@ -293,4 +320,22 @@ Resources:
   S3Bucket:  
     Type: AWS::S3::Bucket
     Properties:  
-      BucketName: raiseitech-bucket # バケット名称
+      BucketName: raisetech-test-bucket # バケット名称
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+
+Outputs:
+  EC2InstancePublicIP:
+    Description: "Public IP address of the EC2 instance"
+    Value: !GetAtt EC2Instance.PublicIp
+  SecurityGroupId:
+    Description: "SecurityGroup ID"
+    Value: !Ref EC2SecurityGroup
+    Export:
+      Name: EC2SecurityGroupId
+  DBEndpoint:
+    Description: "RDS endpoint"
+    Value: !GetAtt RDSInstance.Endpoint.Address
+    Export:
+      Name: DBEndpoint
+

@@ -1,17 +1,204 @@
 version: 2.1
+
+# 使用するOrb（CircleCIの共通処理パッケージ）を定義
 orbs:
   python: circleci/python@2.0.3
+  aws-cli: circleci/aws-cli@4.1.1
+
+
 jobs:
-  cfn-lint:
-    executor: python/default
+
+  # CloudFormationテンプレートを使用してスタック作成
+  Generate_Cloudformation_Template:
+    docker:
+      - image: cimg/python:3.11
     steps:
       - checkout
-      - run: pip install cfn-lint
+      - aws-cli/setup
       - run:
-          name: run cfn-lint
+          name: "cfn-Lintインストール&実行"
           command: |
+            pip install cfn-lint
             cfn-lint -i W3002 -t cloudformation/*.yml
+      - run:
+          name: "SecretsManagerスタック作成"
+          command: |
+            aws cloudformation deploy \
+              --template-file cloudformation/secrets-template.yml \
+              --stack-name secrets-stack \
+              --capabilities CAPABILITY_NAMED_IAM \
+              --parameter-overrides DBUsername=Admin
+      - run:
+          name: "メインCloudFormationスタック作成"
+          command: |
+            aws cloudformation deploy \
+              --template-file cloudformation/main-template.yml \
+              --stack-name raisetech-stack \
+              --capabilities CAPABILITY_NAMED_IAM \
+              --parameter-overrides DBUsername=Admin MyIpAdress=133.32.183.11/32
+      - run:
+          name: "EC2インスタンスのパブリックIP取得(Ansible, Serverspec実行時に使用)"
+          command: |
+            mkdir -p tmp
+            export EC2_PUBLIC_IP=$(aws cloudformation describe-stacks \
+              --stack-name raisetech-stack \
+              --query "Stacks[0].Outputs[?OutputKey=='EC2InstancePublicIP'].OutputValue" \
+              --output text)
+            echo "$EC2_PUBLIC_IP" > tmp/ec2_public_ip.txt
+            cat tmp/ec2_public_ip.txt
+      - persist_to_workspace:
+          root: tmp
+          paths:
+            - ec2_public_ip.txt
+
+  Deploy_Rails_App:
+    docker:
+      - image: cimg/python:3.11
+    environment:
+      TARGET_HOST: ""
+      SSH_KEY_PATH: ~/.ssh/id_rsa
+    steps:
+      - checkout
+      - aws-cli/setup
+      - run:
+          name: "Ansible、AWSモジュールインストール"
+          command: |
+            pip install --upgrade pip setuptools wheel
+            pip install ansible-core~=2.16.0
+            pip install 'ansible>=9.0.0,<10.0.0'
+            pip install boto3 botocore
+            ansible-galaxy collection install amazon.aws
+            ansible --version
+      - run:
+          name: "ansible.cfgを生成"
+          command: |
+            echo '[defaults]' > ansible/ansible.cfg
+            echo 'collections_paths = /home/circleci/.pyenv/versions/3.11.12/lib/python3.11/site-packages/ansible_collections:/home/circleci/.ansible/collections' >> ansible/ansible.cfg
+            cat ansible/ansible.cfg
+      - attach_workspace:
+          at: tmp
+      - run:
+          name: "ワークスペースからEC2のパブリックIP読み込み"
+          command: |
+            export EC2_PUBLIC_IP=$(cat tmp/ec2_public_ip.txt)
+            echo "export TARGET_HOST=$EC2_PUBLIC_IP" >> $BASH_ENV
+            source $BASH_ENV
+      - run:
+          name: "Ansible Inventory File(hosts)生成"
+          command: |
+            echo "[web]" > ansible/hosts
+            echo "${TARGET_HOST} ansible_user=ec2-user ansible_ssh_private_key_file=${SSH_KEY_PATH} ansible_python_interpreter=/usr/local/bin/python3.8" >> ansible/hosts
+            cat ansible/hosts
+      - run:
+          name: "環境変数にCircleCIのIPアドレスとセキュリティグループID(EC2用)保存"
+          command: |
+            echo 'export MY_IP=$(curl -s https://checkip.amazonaws.com)' >> $BASH_ENV
+            echo 'export MY_CIDR=${MY_IP}/32' >> $BASH_ENV
+            echo 'export SG_ID=$(aws cloudformation describe-stacks \
+              --stack-name raisetech-stack \
+              --query "Stacks[0].Outputs[?OutputKey==\`SecurityGroupId\`].OutputValue" \
+              --output text)' >> $BASH_ENV
+            source $BASH_ENV
+      - run:
+          name: "セキュリティグループ(EC2用)にCircleCIからSSH接続許可"
+          command: |
+            echo "Adding SSH rule for ${MY_CIDR} to ${SG_ID}"
+            aws ec2 authorize-security-group-ingress \
+              --group-id "${SG_ID}" \
+              --protocol tcp \
+              --port 22 \
+              --cidr "${MY_CIDR}" || echo "SSH rule already exists or failed, skipping"
+      - run:
+          name: "known_hostsにホストを追加(初回接続確認回避用)" 
+          command: |
+            mkdir -p ~/.ssh
+            touch ~/.ssh/known_hosts
+            echo "TARGET_HOST: ${TARGET_HOST}" 
+            ssh-keyscan -H ${TARGET_HOST} >> ~/.ssh/known_hosts
+      - run:
+          name: "Ansible Playbookを実行"
+          command: |
+            ansible-playbook -i ansible/hosts ansible/playbook.yml
+      - run:
+          name: "セキュリティグループ(EC2用)にCircleCIからSSH接続許可無効"
+          command: |
+            echo "Removing SSH rule for ${MY_CIDR} from ${SG_ID}"
+            aws ec2 revoke-security-group-ingress \
+              --group-id "${SG_ID}" \
+              --protocol tcp \
+              --port 22 \
+              --cidr "${MY_CIDR}"
+
+  Run_Server_Test:
+    docker:
+      - image: cimg/python:3.11
+    environment:
+      TARGET_HOST: ""
+      SSH_KEY_PATH: ~/.ssh/id_rsa
+    steps:
+      - checkout
+      - aws-cli/setup 
+      - run:
+          name: "Serverspecインストール"
+          command: |
+            sudo apt update
+            sudo apt install -y ruby ruby-dev build-essential curl
+            echo 'export GEM_HOME="$HOME/.gem"' >> $BASH_ENV
+            echo 'export PATH="$HOME/.gem/bin:$PATH"' >> $BASH_ENV
+            source $BASH_ENV
+            gem install serverspec rake
+      - attach_workspace:
+          at: tmp
+      - run:
+          name: "ワークスペースからEC2のパブリックIPを読み込む"
+          command: |
+            cat tmp/ec2_public_ip.txt
+            export EC2_PUBLIC_IP=$(cat tmp/ec2_public_ip.txt)
+            echo "export TARGET_HOST=$EC2_PUBLIC_IP" >> $BASH_ENV
+            source $BASH_ENV
+      - run:
+          name: "環境変数にCircleCIのIPアドレスとセキュリティグループID(EC2用)保存"
+          command: |
+            echo "export MY_IP=$(curl -s https://checkip.amazonaws.com)" >> $BASH_ENV
+            echo 'export MY_CIDR=${MY_IP}/32' >> $BASH_ENV
+            echo 'export SG_ID=$(aws cloudformation describe-stacks \
+              --stack-name raisetech-stack \
+              --query "Stacks[0].Outputs[?OutputKey==\`SecurityGroupId\`].OutputValue" \
+              --output text)' >> $BASH_ENV
+            source $BASH_ENV
+      - run:
+          name: "セキュリティグループ(EC2用)にCircleCIからSSH接続許可"
+          command: |
+            echo "Adding SSH rule for ${MY_CIDR} to ${SG_ID}"
+            aws ec2 authorize-security-group-ingress \
+              --group-id "${SG_ID}" \
+              --protocol tcp \
+              --port 22 \
+              --cidr "${MY_CIDR}" || echo "SSH rule already exists or failed, skipping" 
+      - run:
+          name: "Serverspec実行"
+          command: |
+            cd serverspec
+            rake spec
+      - run:
+          name: "セキュリティグループ(EC2用)にCircleCIからSSH接続許可無効"
+          command: |
+            echo "Removing SSH rule for ${MY_CIDR} from ${SG_ID}"
+            aws ec2 revoke-security-group-ingress \
+              --group-id "${SG_ID}" \
+              --protocol tcp \
+              --port 22 \
+              --cidr "${MY_CIDR}"
+
 workflows:
+  version: 2
   raisetech:
     jobs:
-      - cfn-lint
+      - Generate_Cloudformation_Template
+      - Deploy_Rails_App:
+          requires:
+            - Generate_Cloudformation_Template
+      - Run_Server_Test:         
+          requires:
+            - Deploy_Rails_App
+

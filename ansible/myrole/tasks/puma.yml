@@ -1,0 +1,38 @@
+---
+- name: puma.serviceをアップロード
+  template:
+    src: puma.service.j2
+    dest: /etc/systemd/system/puma.service
+  become: yes
+
+- name: puma.rbをアップロード
+  template:
+    src: puma.rb.j2
+    dest: "/var/www/rails-app/config/puma.rb"
+    owner: ec2-user
+    group: ec2-user
+    mode: '0775'
+
+- name: Puma用のディレクトリ(socketsとpids)を作成
+  file:
+    path: "/var/www/rails-app/tmp/{{ item }}"
+    state: directory
+    owner: ec2-user
+    group: ec2-user
+    mode: '0775'
+  loop:
+    - sockets
+    - pids
+
+- name: systemdをリロード(Pumaサービス変更を反映)
+  systemd:
+    daemon_reload: yes
+  become: yes
+
+- name: Pumaサービスを起動・有効化
+  systemd:
+    name: puma
+    state: started
+    enabled: yes
+  become: yes
+ 

@@ -1,0 +1,117 @@
+---
+- name: .gitディレクトリが存在するか確認
+  stat:
+    path: /var/www/rails-app/.git
+  register: git_dir
+
+- name: Railsアプリリポジトリをクローン
+  git:
+    repo: 'https://github.com/yuta-ushijima/raisetech-live8-sample-app.git'
+    dest: /var/www/rails-app
+    version: main
+  when: not git_dir.stat.exists
+
+- name: bundle installを実行
+  shell: |
+    export HOME=/home/ec2-user
+    export PATH="$HOME/.rbenv/bin:$HOME/.rbenv/shims:$PATH"
+    eval "$(rbenv init - bash)"
+    cd /var/www/rails-app
+    bundle install
+  args:
+    chdir: /var/www/rails-app
+    executable: /bin/bash
+
+- name: yarn installを実行
+  shell: |
+    export HOME=/home/ec2-user
+    export PATH="$HOME/.nvm/versions/node/v17.9.1/bin:$HOME/.rbenv/bin:$HOME/.rbenv/shims:$PATH"
+    eval "$(rbenv init -)"
+    yarn install
+  args:
+    chdir: /var/www/rails-app
+    executable: /bin/bash
+
+- name: /var/www/rails-appとサブディレクトリ権限付与
+  file:
+    path: /var/www/rails-app
+    state: directory
+    recurse: yes
+    owner: ec2-user
+    group: ec2-user
+    mode: '0775'
+
+- name: CloudFormationスタックの出力を取得
+  amazon.aws.cloudformation_info:
+    stack_name: raisetech-stack
+    region: ap-northeast-1
+  register: cfn_outputs
+
+- name: CloudFormationの出力内容をデバッグ表示
+  debug:
+    var: cfn_outputs
+
+- name: RDSのエンドポイントを設定
+  set_fact:
+    rds_endpoint: "{{ item.output_value }}"
+  loop: "{{ cfn_outputs.cloudformation['raisetech-stack'].stack_description.outputs }}"
+  when: item.output_key == 'DBEndpoint'
+
+- name: AWS CLIでRDSのシークレットを取得
+  ansible.builtin.command: >
+    aws secretsmanager get-secret-value
+      --region ap-northeast-1
+      --secret-id db-secret
+      --query SecretString
+      --output text
+  register: secret_json
+  changed_when: false
+
+- name: シークレットJSONを解析して変数にセット
+  ansible.builtin.set_fact:
+    secret_result: "{{ secret_json.stdout | from_json }}"
+
+- name: Railsのproduction用credentialsをアップロード
+  copy:
+    src: production.yml.enc
+    dest: /var/www/rails-app/config/credentials/production.yml.enc
+    owner: ec2-user
+    group: ec2-user
+    mode: '0640'
+
+- name: Railsのproduction用キーをアップロード
+  copy:
+    src: production.key
+    dest: /var/www/rails-app/config/credentials/production.key
+    owner: ec2-user
+    group: ec2-user
+    mode: '0600'
+
+- name: database.ymlをアップロード
+  template:
+    src: database.yml.j2
+    dest: "/var/www/rails-app/config/database.yml"
+    owner: ec2-user
+    group: ec2-user
+    mode: '0775'
+
+- name: storage.ymlをアップロード
+  template:
+    src: storage.yml.j2
+    dest: "/var/www/rails-app/config/storage.yml"
+    owner: ec2-user
+    group: ec2-user
+    mode: '0775'
+
+- name: データベース作成・マイグレーション・アセットプリコンパイルを実行
+  shell: |
+    export HOME=/home/ec2-user
+    export PATH="$HOME/.nvm/versions/node/v17.9.1/bin:$HOME/.rbenv/bin:$HOME/.rbenv/shims:$PATH"
+    export RAILS_ENV=production
+    eval "$(rbenv init - bash)"
+    bundle exec rails db:create
+    bundle exec rails db:migrate
+    bundle exec rails assets:precompile
+  args:
+    chdir: /var/www/rails-app
+
